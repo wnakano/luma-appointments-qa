@@ -12,10 +12,11 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment: heroku
     
     env:
       HEROKU_APP_NAME: luma-mcp-service # Replace with your actual app name
-    
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
