@@ -562,6 +562,14 @@ psql -d db-appointments -f database/scripts/01_seed.sql
 - Verify API key is valid
 - Check API quota/billing
 
+## Next Steps
+
+Planned improvements and features for future releases:
+
+- [ ] Store identification parameters (patient's `full_name`) in lower case for case-insensitive matching
+- [ ] Implement direct query strategy for user verification using combinations of (`full_name`, `date_of_birth`, `phone`) or (`phone`, `date_of_birth`)
+- [ ] Add an option in the appointments menu to stop/exit the QA interaction
+
 ## License
 
 Proprietary software developed for LumaHealth. All rights reserved.
