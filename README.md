@@ -31,7 +31,7 @@ This system combines three services:
 ### Prerequisites
 
 - Docker (v20.10+) and Docker Compose (v2.0+)
-- OpenAI API key (`OPENAI_API_KEY`) or Anthropic API key (`ANTHROPIC_API_KEY`)
+- OpenAI API key (`OPENAI_API_KEY`)
 
 ### Setup
 
@@ -44,9 +44,6 @@ cd lumahealth-assignment
 # Create .env file
 cat > .env << EOF
 OPENAI_API_KEY=sk-your-key-here
-DATABASE_URL=postgresql://postgres:password@postgres:5432/db-appointments
-MCP_SERVER_URL=http://mcp-server:8080/mcp
-LOGGING_LEVEL=INFO
 EOF
 ```
 
@@ -405,9 +402,7 @@ Execute multiple queries within a transaction.
 
 The AI service uses LangGraph for multi-step conversation orchestration:
 
-![QA Graph](apps/ai-service/images/qa_graph.png)
-
-**Flow**: User verification → Intent routing → Database operations → Response generation
+![QA Graph](images/qa_graph.png)
 
 ## Development
 
@@ -425,14 +420,99 @@ uv sync
 uv add <package-name>
 ```
 
-### Running Tests
+### Testing
 
+#### Test Organization
+
+Tests are organized to **mirror the source code structure**, making it easy to locate and maintain tests:
+
+```
+apps/
+├── ai-service/
+│   ├── src/
+│   │   └── ai/graph/services/        # Source code
+│   │       ├── llm.py
+│   │       └── qa/
+│   │           ├── intent.py
+│   │           ├── extraction.py
+│   │           ├── validation.py
+│   │           ├── response.py
+│   │           ├── query_tool.py
+│   │           └── query_orm.py
+│   │
+│   └── tests/
+│       ├── conftest.py               # Root fixtures (DB, MCP, env)
+│       │
+│       └── ai/graph/services/        # Tests mirror source structure
+│           ├── conftest.py           # Service-specific fixtures
+│           ├── test_llm.py           # Tests for llm.py
+│           └── qa/
+│               ├── test_intent.py    # Tests for qa/intent.py
+│               ├── test_extraction.py
+│               ├── test_validation.py
+│               ├── test_response.py
+│               ├── test_query_tool.py
+│               └── test_query_orm.py
+│
+├── mcp-server/tests/
+└── ui-service/tests/
+```
+
+**Test Structure Benefits**:
+- **1:1 Mapping**: Each source file has a corresponding test file in the same relative location
+- **Easy Navigation**: Know the source path → know the test path
+- **Clear Organization**: Tests grouped by service component
+- **Shared Fixtures**: `conftest.py` files at multiple levels provide reusable fixtures
+
+#### Running Tests
+
+**AI Service Tests**:
 ```bash
-cd apps/<service-name>
+cd apps/ai-service
+
+# Run all tests
 uv run pytest
 
-# With coverage
+# Run tests for specific service
+uv run pytest tests/ai/graph/services/qa/test_intent.py
+
+# Run all QA service tests
+uv run pytest tests/ai/graph/services/qa/
+
+# Run all service tests (excludes legacy test_ai_services.py)
+uv run pytest tests/ai/graph/services/
+
+# Run with coverage
 uv run pytest --cov=src tests/
+
+# Run with verbose output
+uv run pytest -v --tb=short
+
+# Run specific test method
+uv run pytest tests/ai/graph/services/qa/test_intent.py::TestIntentService::test_classify_appointment_intent -v
+```
+
+**MCP Server Tests** **[NOT IMPLEMENTED]**:
+```bash
+cd apps/mcp-server
+uv run pytest
+uv run pytest --cov=src tests/
+```
+
+**UI Service Tests** **[NOT IMPLEMENTED]**:
+```bash
+cd apps/ui-service
+uv run pytest
+uv run pytest --cov=src tests/
+```
+
+**Run All Tests**:
+```bash
+# From project root
+for service in ai-service mcp-server ui-service; do
+  echo "Testing $service..."
+  (cd apps/$service && uv run pytest)
+done
 ```
 
 ### Local Database Setup
@@ -444,89 +524,6 @@ createdb db-appointments
 # Run initialization scripts
 psql -d db-appointments -f database/scripts/00_create_tables.sql
 psql -d db-appointments -f database/scripts/01_seed.sql
-```
-
-### Docker Commands
-
-```bash
-# Start all services
-docker-compose up -d --build
-
-# Stop services
-docker-compose down
-
-# Stop and remove volumes
-docker-compose down -v
-
-# View logs
-docker-compose logs -f [service-name]
-
-# Restart specific service
-docker-compose restart [service-name]
-
-# Check status
-docker-compose ps
-```
-
-### Code Quality
-
-```bash
-# Format code
-uv run black .
-
-# Lint
-uv run ruff check .
-
-# Type checking
-uv run mypy .
-```
-
-## Troubleshooting
-
-### Services Not Starting
-
-```bash
-# Check logs
-docker-compose logs
-
-# Restart services
-docker-compose restart
-```
-
-### Database Connection Errors
-
-```bash
-# Verify PostgreSQL is running
-docker-compose ps postgres
-
-# Check database logs
-docker-compose logs postgres
-
-# Verify connection
-docker-compose exec postgres psql -U postgres -d db-appointments -c "SELECT 1"
-```
-
-### Port Conflicts
-
-```bash
-# Check if ports are in use
-lsof -i :8000  # AI service
-lsof -i :8080  # MCP server
-lsof -i :8501  # UI service
-lsof -i :5432  # PostgreSQL
-
-# Kill process using port
-kill -9 $(lsof -ti:PORT_NUMBER)
-```
-
-### API Key Issues
-
-```bash
-# Verify environment variables
-docker-compose exec qa env | grep API_KEY
-
-# Restart AI service after updating .env
-docker-compose restart qa
 ```
 
 ### Common Errors
@@ -542,14 +539,6 @@ docker-compose restart qa
 **"OpenAI API error"**:
 - Verify API key is valid
 - Check API quota/billing
-
-## Additional Resources
-
-- [FastAPI Documentation](https://fastapi.tiangolo.com/)
-- [LangGraph Documentation](https://langchain-ai.github.io/langgraph/)
-- [Streamlit Documentation](https://docs.streamlit.io/)
-- [Model Context Protocol](https://modelcontextprotocol.io/)
-- [FastMCP Documentation](https://github.com/jlowin/fastmcp)
 
 ## License
 
