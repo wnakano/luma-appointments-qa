@@ -151,7 +151,9 @@ Submit a question to the AI chatbot.
 {
   "request_id": "req-123",
   "user_id": "user-456",
-  "system_answer": "I'd be happy to help. First, I need to verify your identity..."
+  "system_answer": "I'd be happy to help. First, I need to verify your identity...",
+  "timestamp": "2025-09-29 18:15:08.502656+0000",
+  "elapsed_time": 3.9126
 }
 ```
 
