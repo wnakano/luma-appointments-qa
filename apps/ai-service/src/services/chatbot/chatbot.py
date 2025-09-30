@@ -49,11 +49,14 @@ class ChatbotService:
             session_id=params.session_id
         )
 
+        end = TimeHandler.get_time()
+
         messages = state.get('messages', [])
         logger.info(f"[Answers] message = {messages[-1]} ")
         return QAResponse(
             request_id=params.request_id,
             user_id=params.user_id,
-            # state=state,
             system_answer=messages[-1] if messages else "",
+            timestamp=TimeHandler.get_timestamp(tz="UTC"),
+            elapsed_time=round(end - start, 4),
         )
