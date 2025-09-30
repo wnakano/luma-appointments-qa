@@ -286,9 +286,6 @@ class QAGraph(BaseGraph):
 
 		return compiled
 
-	def _cfg(self, session_id: str) -> Dict[str, Dict[str, str]]:
-		return {"configurable": {"thread_id": session_id}}
-
 	def get_current_state(self, session_id: str) -> Optional[QAState]:
 		try:
 			snap = self._graph.get_state(self._cfg(session_id))
