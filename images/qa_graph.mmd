@@ -1,0 +1,42 @@
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	CHECK_USER_SESSION(CHECK_USER_SESSION)
+	PROCESS_USER_INPUT(PROCESS_USER_INPUT)
+	COLLECT_USER_INFO(COLLECT_USER_INFO<hr/><small><em>__interrupt = after</em></small>)
+	HANDLE_INVALID_INPUT(HANDLE_INVALID_INPUT<hr/><small><em>__interrupt = after</em></small>)
+	VERIFY_IDENTITY(VERIFY_IDENTITY)
+	QUERY_IDENTITY(QUERY_IDENTITY)
+	VERIFICATION_FAILED(VERIFICATION_FAILED<hr/><small><em>__interrupt = after</em></small>)
+	MENU_INPUT(MENU_INPUT<hr/><small><em>__interrupt = after</em></small>)
+	MENU_OUTPUT(MENU_OUTPUT)
+	ACTION_APPOINTMENT_LIST(ACTION_APPOINTMENT_LIST<hr/><small><em>__interrupt = before</em></small>)
+	__end__([<p>__end__</p>]):::last
+	ACTION_APPOINTMENT_LIST -. &nbsp;CORRECT_APPOINTMENT_ACTION&nbsp; .-> MENU_INPUT;
+	ACTION_APPOINTMENT_LIST -. &nbsp;WRONG_ACTION_CHOICE&nbsp; .-> MENU_OUTPUT;
+	CHECK_USER_SESSION -. &nbsp;MISSING&nbsp; .-> COLLECT_USER_INFO;
+	CHECK_USER_SESSION -. &nbsp;IDENTIFIED&nbsp; .-> MENU_INPUT;
+	CHECK_USER_SESSION -. &nbsp;VERIFIED&nbsp; .-> VERIFY_IDENTITY;
+	COLLECT_USER_INFO -. &nbsp;PROCESS_USER_INPUT&nbsp; .-> PROCESS_USER_INPUT;
+	COLLECT_USER_INFO -. &nbsp;VERIFY&nbsp; .-> VERIFY_IDENTITY;
+	MENU_INPUT --> MENU_OUTPUT;
+	MENU_OUTPUT -. &nbsp;WAIT_APPOINTMENT_ACTION&nbsp; .-> ACTION_APPOINTMENT_LIST;
+	MENU_OUTPUT -. &nbsp;WRONG_APPOINTMENT_CHOICE&nbsp; .-> MENU_INPUT;
+	PROCESS_USER_INPUT -. &nbsp;COLLECT_NEXT&nbsp; .-> COLLECT_USER_INFO;
+	PROCESS_USER_INPUT -. &nbsp;INVALID_INPUT&nbsp; .-> HANDLE_INVALID_INPUT;
+	PROCESS_USER_INPUT -. &nbsp;VERIFY&nbsp; .-> VERIFY_IDENTITY;
+	QUERY_IDENTITY -. &nbsp;MATCH&nbsp; .-> MENU_INPUT;
+	QUERY_IDENTITY -. &nbsp;NOT_MATCH&nbsp; .-> VERIFICATION_FAILED;
+	VERIFICATION_FAILED --> COLLECT_USER_INFO;
+	VERIFY_IDENTITY -. &nbsp;RETRY&nbsp; .-> COLLECT_USER_INFO;
+	VERIFY_IDENTITY -. &nbsp;VERIFIED&nbsp; .-> QUERY_IDENTITY;
+	VERIFY_IDENTITY -. &nbsp;FAILED&nbsp; .-> __end__;
+	__start__ --> CHECK_USER_SESSION;
+	HANDLE_INVALID_INPUT --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc

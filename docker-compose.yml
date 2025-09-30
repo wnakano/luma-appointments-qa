@@ -1,0 +1,116 @@
+version: '3.8'
+
+x-env-common: &env_common
+  PYTHONUNBUFFERED: "1"
+  LOGGING_LEVEL: "INFO"
+  # DATABASE_URL: postgresql://postgres:password@postgres:5432/db-appointments
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: db-appointments
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d db-appointments"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  mcp-server:
+    build:
+      context: apps
+      dockerfile: mcp-server/docker/Dockerfile
+    environment:
+      <<: *env_common
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/db-appointments
+      PORT: "8080"
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/mcp/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+  qa:
+    build:
+      context: apps
+      dockerfile: ai-service/docker/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mcp-server:
+        condition: service_healthy
+    env_file:
+     - ./.env
+    environment:
+      <<: *env_common
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      MCP_SERVER_URL: http://mcp-server:8080/mcp
+      DATABASE_URL: postgresql://postgres:password@postgres:5432/db-appointments
+    ports:
+      - 8000:8000
+    networks:
+      - app-network
+    restart: unless-stopped
+    volumes:
+      - ./apps/ai-service/images:/app/images
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/checker"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+  ui-service:
+    build:
+      context: apps
+      dockerfile: ui-service/docker/Dockerfile
+    environment:
+      <<: *env_common
+      CHATBOT_API_URL: http://qa:8000/api/v1/chatbot/question
+      STREAMLIT_SERVER_PORT: "8501"
+      STREAMLIT_SERVER_ADDRESS: 0.0.0.0
+      STREAMLIT_SERVER_HEADLESS: "true"
+    ports:
+      - "8501:8501"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qa:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: unless-stopped
+    volumes:
+      - ./apps/ui-service/src:/app/
+      - ./apps/utils:/app/utils
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  postgres_data:

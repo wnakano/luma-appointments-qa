@@ -1,0 +1,49 @@
+[project]
+name = "ui-service"
+version = "0.1.0"
+description = "Streamlit chatbot interface with SQLAlchemy database integration"
+requires-python = ">=3.9"
+dependencies = [
+    "streamlit>=1.28.0",
+    "sqlalchemy>=2.0.0",
+    "psycopg2-binary>=2.9.0",
+    "requests>=2.31.0",
+    "python-dotenv>=1.0.0",
+    "pydantic>=2.0.0",
+    "uuid",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+]
+
+[tool.hatch.build]
+sources = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+    "components",
+    "core",
+    "database",
+    "services",
+    "utils",
+]
+include = [
+    "app.py",
+    "constants.py",
+    "static/**",
+    "styles/**",
+]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "src/**",
+    "README.md",
+]
