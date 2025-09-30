@@ -1,0 +1,58 @@
+name: Deploy UI Service
+
+on:
+  push:
+    branches: [development]
+    paths:
+      - 'apps/ui-service/**'
+      - 'apps/utils/**'
+      - '.github/workflows/deploy-ui-service.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: heroku
+    
+    env:
+      HEROKU_APP_NAME: ui-service
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Install Heroku CLI
+        run: |
+          curl https://cli-assets.heroku.com/install.sh | sh
+      
+      - name: Login to Heroku Container Registry
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          echo $HEROKU_API_KEY | docker login --username=_ --password-stdin registry.heroku.com
+      
+      - name: Build Docker image
+        working-directory: apps
+        run: |
+          docker build \
+            -f ui-service/docker/Dockerfile.heroku \
+            -t registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web \
+            .
+      
+      - name: Push Docker image to Heroku
+        run: |
+          docker push registry.heroku.com/${{ env.HEROKU_APP_NAME }}/web
+      
+      - name: Release to Heroku
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          heroku container:release web -a ${{ env.HEROKU_APP_NAME }}
+      
+      - name: Show deployment status
+        env:
+          HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        run: |
+          echo "✅ Deployment complete!"
+          heroku ps -a ${{ env.HEROKU_APP_NAME }}
+          echo "🌐 App URL: https://${{ env.HEROKU_APP_NAME }}.herokuapp.com"
