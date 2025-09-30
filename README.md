@@ -16,6 +16,10 @@ This system combines three services:
 
 ```
 .
+├── .github/workflows/      # GitHub Actions CI/CD pipelines
+│   ├── deploy-ai-service.yml
+│   ├── deploy-mcp-server.yml
+│   └── deploy-ui-service.yml
 ├── apps/
 │   ├── ai-service/         # FastAPI + LangGraph conversational backend
 │   ├── mcp-server/         # FastMCP server for database tools
@@ -25,6 +29,22 @@ This system combines three services:
 ├── docker-compose.yml      # Multi-service orchestration
 └── README.md
 ```
+
+## Deployment
+
+All services are automatically deployed to Heroku using GitHub Actions workflows:
+
+- **UI Service**: https://ui-service-24ed2af96115.herokuapp.com/
+- **AI Service**: https://qa-service-a84608d2bdf6.herokuapp.com/
+- **MCP Server**: https://luma-mcp-service-07b1007fe9e1.herokuapp.com/
+
+Deployment is triggered automatically on push to the main branch. Each service has its own dedicated workflow:
+
+- `.github/workflows/deploy-ai-service.yml` - Deploys AI service
+- `.github/workflows/deploy-mcp-server.yml` - Deploys MCP server
+- `.github/workflows/deploy-ui-service.yml` - Deploys UI service
+
+** NOTE: ** The deployment was carried out on Heroku due to its cost-effectiveness, as it offers lower pricing compared to most common cloud providers (e.g., GCP, AWS, Azure).
 
 ## Quick Start
 
@@ -68,6 +88,24 @@ docker-compose ps
 # View logs
 docker-compose logs -f
 ```
+
+### Test Solution: User Data
+
+To interact with the chatbot, you need to provide patient identification data (full name, phone number, and date of birth). Use any of the following test patients:
+
+| Full Name        | Phone Number    | Date of Birth |
+|-----------------|-----------------|---------------|
+| Liam Dias       | +15551000013    | 1945-04-16    |
+| Hugo Moraes     | +15551000014    | 1979-01-09    |
+| Rafael Ribeiro  | +15551000015    | 1949-10-04    |
+| Chloe Costa     | +15551000040    | 1981-02-11    |
+| Kaito Araujo    | +15551000041    | 1951-11-07    |
+| Michael Almeida | +15551000042    | 1986-08-01    |
+
+**Example Usage**:
+1. Open the chatbot UI at https://ui-service-24ed2af96115.herokuapp.com/ or http://localhost:8501
+2. Start the conversation with a message like "Hi" or "I want to see my appointments"
+3. When prompted for verification, provide the credentials for one of the test patients above
 
 ## Services
 
@@ -541,6 +579,14 @@ psql -d db-appointments -f database/scripts/01_seed.sql
 **"OpenAI API error"**:
 - Verify API key is valid
 - Check API quota/billing
+
+## Next Steps
+
+Planned improvements and features for future releases:
+
+- [ ] Store identification parameters (patient's `full_name`) in lower case for case-insensitive matching
+- [ ] Implement direct query strategy for user verification using combinations of (`full_name`, `date_of_birth`, `phone`) or (`phone`, `date_of_birth`)
+- [ ] Add an option in the appointments menu to stop/exit the QA interaction
 
 ## License
 

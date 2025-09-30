@@ -2,7 +2,7 @@ name: Deploy MCP Server
 
 on:
   push:
-    branches: [development]
+    branches: [main]
     paths:
       - 'apps/mcp-server/**'
       - 'apps/utils/**'

@@ -2,7 +2,7 @@ name: Deploy UI Service
 
 on:
   push:
-    branches: [development]
+    branches: [main]
     paths:
       - 'apps/ui-service/**'
       - 'apps/utils/**'
