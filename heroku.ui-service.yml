@@ -1,0 +1,5 @@
+build:
+  docker:
+    web:
+      dockerfile: apps/ui-service/docker/Dockerfile.heroku
+      context: apps
