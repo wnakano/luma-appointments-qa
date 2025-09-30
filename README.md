@@ -89,6 +89,24 @@ docker-compose ps
 docker-compose logs -f
 ```
 
+### Test Solution: User Data
+
+To interact with the chatbot, you need to provide patient identification data (full name, phone number, and date of birth). Use any of the following test patients:
+
+| Full Name        | Phone Number    | Date of Birth |
+|-----------------|-----------------|---------------|
+| Liam Dias       | +15551000013    | 1945-04-16    |
+| Hugo Moraes     | +15551000014    | 1979-01-09    |
+| Rafael Ribeiro  | +15551000015    | 1949-10-04    |
+| Chloe Costa     | +15551000040    | 1981-02-11    |
+| Kaito Araujo    | +15551000041    | 1951-11-07    |
+| Michael Almeida | +15551000042    | 1986-08-01    |
+
+**Example Usage**:
+1. Open the chatbot UI at https://ui-service-24ed2af96115.herokuapp.com/ or http://localhost:8501
+2. Start the conversation with a message like "Hi" or "I want to see my appointments"
+3. When prompted for verification, provide the credentials for one of the test patients above
+
 ## Services
 
 ### AI Service (Port 8000)
