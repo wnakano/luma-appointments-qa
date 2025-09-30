@@ -1,0 +1,23 @@
+FROM python:3.11-slim
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libpq-dev curl build-essential \
+  && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY mcp-server/pyproject.toml .
+COPY mcp-server/uv.lock .
+COPY mcp-server/README.md .
+COPY mcp-server/src .
+COPY utils utils
+
+RUN uv sync --frozen --no-dev --no-install-project
+
+ENV VIRTUAL_ENV=/app/.venv
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH=/app
+
+CMD ["sh", "-c", "python -m uvicorn app:app --host 0.0.0.0 --port ${PORT:-8080}"]
