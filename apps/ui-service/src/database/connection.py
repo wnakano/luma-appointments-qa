@@ -21,5 +21,5 @@ class DatabaseManager:
         """Get a database session"""
         return self.SessionLocal()
 
-# Global database manager instance
-db_manager = DatabaseManager()
+# # Global database manager instance
+# db_manager = DatabaseManager()

@@ -2,7 +2,7 @@ import streamlit as st
 
 from datetime import datetime
 from typing import Optional
-from database.connection import db_manager
+# from database.connection import db_manager
 from database.models import (
     Conversation, 
     Message, 
@@ -37,8 +37,8 @@ class ChatbotApp:
 
         self.initialize_session_state()
 
-        self.db_manager = DatabaseManager()
-        self.conversation_handler = ConversationHandler(self.db_manager)
+        # self.db_manager = DatabaseManager()
+        self.conversation_handler = ConversationHandler() # self.db_manager)
         self.chat_interface = ChatInterface(self.conversation_handler)
 
         logger.info("Chatbot application is being initialized")
@@ -76,7 +76,7 @@ class ChatbotApp:
     def run(self):
         """Run the chatbot application"""
         try:
-            self.db_manager.initialize_database()
+            # self.db_manager.initialize_database()
             self.chat_interface.render()
             
         except Exception as e:
@@ -97,43 +97,43 @@ class DatabaseManager:
         #     raise Exception(f"Database initialization error: {str(e)}")
         pass
 
-    def save_message(self, user_message: str, system_message: str, latency_ms: int, menu_choice: MenuChoices):
-        """Save message to database"""
-        try:
-            session = db_manager.get_session()
+    # def save_message(self, user_message: str, system_message: str, latency_ms: int, menu_choice: MenuChoices):
+    #     """Save message to database"""
+    #     try:
+    #         # session = db_manager.get_session()
             
-            conversation = session.query(Conversation).filter_by(id=st.session_state.conversation_id).first()
-            if not conversation:
-                conversation = Conversation(
-                    id=st.session_state.conversation_id,
-                    session_id=st.session_state.session_id,
-                    qa_system="Healthcare Chatbot"
-                )
-                session.add(conversation)
+    #         conversation = session.query(Conversation).filter_by(id=st.session_state.conversation_id).first()
+    #         if not conversation:
+    #             conversation = Conversation(
+    #                 id=st.session_state.conversation_id,
+    #                 session_id=st.session_state.session_id,
+    #                 qa_system="Healthcare Chatbot"
+    #             )
+    #             session.add(conversation)
             
-            message = Message(
-                conversation_id=st.session_state.conversation_id,
-                request_id=str(self.uuid_handler.generate_uuid()),
-                user_message=user_message,
-                system_message=system_message,
-                latency_ms=latency_ms,
-                menu_choice=menu_choice,
-                completed_at=datetime.now()
-            )
+    #         message = Message(
+    #             conversation_id=st.session_state.conversation_id,
+    #             request_id=str(self.uuid_handler.generate_uuid()),
+    #             user_message=user_message,
+    #             system_message=system_message,
+    #             latency_ms=latency_ms,
+    #             menu_choice=menu_choice,
+    #             completed_at=datetime.now()
+    #         )
             
-            session.add(message)
-            session.commit()
-            session.close()
+    #         session.add(message)
+    #         session.commit()
+    #         session.close()
             
-        except Exception as e:
-            st.error(f"Error saving to database: {str(e)}")
+    #     except Exception as e:
+    #         st.error(f"Error saving to database: {str(e)}")
 
 
 class ConversationHandler:
     """Handles conversation flow and message processing"""
     
-    def __init__(self, db_manager: DatabaseManager):
-        self.db_manager = db_manager
+    def __init__(self): #, db_manager: DatabaseManager):
+        # self.db_manager = db_manager
         self.uuid_handler = UUIDHandler()
         self.chatbot_client = ChatbotAPIClient()
     
