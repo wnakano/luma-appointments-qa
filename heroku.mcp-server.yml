@@ -1,0 +1,5 @@
+build:
+  docker:
+    web:
+      dockerfile: apps/mcp-server/docker/Dockerfile.heroku
+      context: apps
