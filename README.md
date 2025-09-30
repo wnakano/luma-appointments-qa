@@ -16,6 +16,10 @@ This system combines three services:
 
 ```
 .
+├── .github/workflows/      # GitHub Actions CI/CD pipelines
+│   ├── deploy-ai-service.yml
+│   ├── deploy-mcp-server.yml
+│   └── deploy-ui-service.yml
 ├── apps/
 │   ├── ai-service/         # FastAPI + LangGraph conversational backend
 │   ├── mcp-server/         # FastMCP server for database tools
@@ -25,6 +29,22 @@ This system combines three services:
 ├── docker-compose.yml      # Multi-service orchestration
 └── README.md
 ```
+
+## Deployment
+
+All services are automatically deployed to Heroku using GitHub Actions workflows:
+
+- **UI Service**: https://ui-service-24ed2af96115.herokuapp.com/
+- **AI Service**: https://qa-service-a84608d2bdf6.herokuapp.com/
+- **MCP Server**: https://luma-mcp-service-07b1007fe9e1.herokuapp.com/
+
+Deployment is triggered automatically on push to the main branch. Each service has its own dedicated workflow:
+
+- `.github/workflows/deploy-ai-service.yml` - Deploys AI service
+- `.github/workflows/deploy-mcp-server.yml` - Deploys MCP server
+- `.github/workflows/deploy-ui-service.yml` - Deploys UI service
+
+** NOTE: ** The deployment was carried out on Heroku due to its cost-effectiveness, as it offers lower pricing compared to most common cloud providers (e.g., GCP, AWS, Azure).
 
 ## Quick Start
 
