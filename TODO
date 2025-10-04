@@ -1,15 +1,95 @@
-[ ] - store identification parameters (patient's full_name) in lower case
-[ ] - to user verification, use initial direct query strategy using (full_name, date_of_birth, phone), (phone, date_of_birth)
-[ ] - 
-[ ] - 
-[ ] - 
-[ ] - 
-[ ] - 
-[ ] - 
-[ ] - 
-[ ] - 
-[ ] - 
-[ ] - 
-[ ] - 
-[ ] - 
-[ ] - 
+# `ai-service`
+
+
+## `query`
+    [ ] - Query identification parameters (e.g. patient's full_name) in lower case
+
+    [ ] - Change strategy of user verification (service used in query_identity node):
+        - [ ] Query (full_name, date_of_birth, phone)
+        - [ ] Query (phone, date_of_birth)
+        - [ ] Evaluate result retrieved `full_name` from query (phone) vs user's `full_name` (regex)
+
+## `safety checker`
+    [ ] - Add prompt's user safety checker (maybe in intent service)
+
+[ ] - in appointments menu, add an option to stop QA interaction
+
+## `LLM` 
+[ ] - Use FixingParser to valide llm.with_structured_output invokation
+
+[ ] - Support others API providers:
+    - [ ] Create LLM package
+    - [ ] Create Claude module
+    - [ ] Evaluate need of others LLMs modules
+
+## `graph`
+
+[ ] - in Nodes.CheckUserSessionNode, I should:
+    - [ ] add collected_info in API payload and use its information to move to Routes.MISSING or Routes.VERIFY
+    - [ ] remove the system message generation (not being used)
+    - [ ] if I want to keep Routes.IDENTIFIED, I would need to add in state a parameter which gives me user <patient-id> 
+    OR 
+    - [ ] remove all the verification and just use it as a state initializer
+
+[ ] - in Nodes.VERIFY_IDENTITY, I should:
+    - [ ] if Routes.FAILED, set the edge {Nodes.VERIFY_IDENTITY, Nodes.COLLECT_USER_INFO}
+
+[ ] - in Nodes.HANDLE_INVALID_INPUT, I should:
+    - [ ] remove from 'interrupt_after'
+    - [ ] Trigger route when the graph gets NSFW 
+    - [ ] Recommended routes:
+        - {Nodes.CHECK_USER_SESSION, Nodes.HANDLE_INVALID_INPUT}
+        - {Nodes.PROCESS_USER_INPUT, Nodes.HANDLE_INVALID_INPUT}
+        - {Nodes.MENU_OUTPUT, Nodes.HANDLE_INVALID_INPUT}
+
+[ ] - Fix default routes in conditional_edges (Nodes.CHECK_USER_SESSION, Nodes.PROCESS_USER_INPUT, Nodes.COLLECT_USER_INFO, Nodes.VERIFY_IDENTITY)
+
+[ ] - Use class Routes in (Nodes.CHECK_USER_SESSION, Nodes.PROCESS_USER_INPUT, Nodes.COLLECT_USER_INFO, Nodes.VERIFY_IDENTITY, Nodes.QUERY_IDENTITY, Nodes.MENU_OUTPUT)
+
+[ ] - As my UI forces the user to send (full_name, phone, dob) there is no real use case of intent.wants_to_skip, intent.is_asking_question, and intent.requires_clarification. Although functionality still important if UI changes.
+
+[ ] - Redundancy in Nodes.VERIFY_IDENTITY is not important. Only generated a answer for the user mentioning its verification.
+
+[ ] - Edge {Nodes.PROCESS_USER_INPUT -> Nodes.HANDLE_INVALID_INPUT} should be replaced by {Nodes.PROCESS_USER_INPUT -> .Nodes.COLLECT_USER_INFO} while using a new route (e.g. new route: Routes.REPROCESS_INFO) 
+
+[ ] - Nodes.HANDLE_INVALID_INPUT only has a true meaning if I handle NSFW (not safe for work)
+
+
+### `metrics`
+
+[ ] - Store runtime for each node and service
+
+### `state`
+
+[ ] store messages history as {"system": <system-answer>, "user": <user-prompt>}
+
+[ ] parameters not being used: [selected_action, selected_menu_choice]. Would be better to have both being stored to keep track of user journey in menu (appointment choice, appointment action)
+
+[ ] phase should be handled by a class (class Phases)
+
+
+## `tests`
+
+[ ] - Add tests to cover more functionalities
+
+# `database`
+
+(I created the database in the most simple way)
+
+[ ] - Store identification parameters (e.g. patient's full_name) in lower case
+
+[ ] - break down phone_number into code of country (e.g. '1', '55', others)
+
+---
+
+# mcp-server
+
+[ ] - in client, method 'get_langchain_tools' is duplicated 
+
+[ ] - create packages and modules to handle specific tool calls, while mirroing server end. 
+
+[ ] - Redundant 'list_tools' endpoint. FastMCP natively brings this functionality
+
+
+---
+TTS - https://huggingface.co/neuphonic/neutts-air
