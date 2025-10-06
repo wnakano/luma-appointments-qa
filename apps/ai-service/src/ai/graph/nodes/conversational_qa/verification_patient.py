@@ -1,4 +1,4 @@
-from ...states.conversational_qa import QAState
+from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
     Nodes,
     Routes, 
@@ -20,8 +20,8 @@ class VerificationPatientNode:
     
     def __call__(self, state: QAState) -> QAState:
         logger.info("[NODE] VerificationPatientNode")
-        
-        verification_info = state.get('user_info')
+
+        verification_info = state.get(StateKeys.USER_INFO, None)
         if verification_info:
             user_record_db = self.query_orm_service.find_user(
                 user_info=verification_info
@@ -34,15 +34,15 @@ class VerificationPatientNode:
                     phone_number=user_record_db['phone_number'],
                     date_of_birth=user_record_db['date_of_birth'],
                 )
-                state['user_record'] = user_record
-                state['is_verified'] = True
+                state[StateKeys.USER_RECORD] = user_record
+                state[StateKeys.IS_VERIFIED] = True
                 route = Routes.VERIFIED
             else:
                 route = Routes.NOT_VERIFIED
         else:
-            route = Routes.NOT_VERIFIED            
-        state['route'] = route
-        state["current_node"] = Nodes.VERIFICATION_PATIENT
+            route = Routes.NOT_VERIFIED
+        state[StateKeys.ROUTE] = route
+        state[StateKeys.CURRENT_NODE] = Nodes.VERIFICATION_PATIENT
 
         return state
 

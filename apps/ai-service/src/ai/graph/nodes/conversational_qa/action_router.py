@@ -1,4 +1,4 @@
-from ...states.conversational_qa import QAState
+from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
     Nodes,
     Routes, 
@@ -16,7 +16,7 @@ class ActionRouterNode:
     
     def __call__(self, state: QAState) -> QAState:
         logger.info("[NODE] ActionRouterNode")
-        current_intent = state.get("current_intent")
+        current_intent = state.get(StateKeys.CURRENT_INTENT)
 
         if current_intent == IntentType.APPOINTMENT_INFORMATION:
             route = Routes.INTENT_WAIT
@@ -31,8 +31,8 @@ class ActionRouterNode:
             route = Routes.INTENT_LIST
         
         logger.info(f"[NODE] ActionRouterNode: router -> {route}")
-        state["route"] = route
-        state["current_node"] = Nodes.ACTION_ROUTER
+        state[StateKeys.ROUTE] = route
+        state[StateKeys.CURRENT_NODE] = Nodes.ACTION_ROUTER
         
         return state
 

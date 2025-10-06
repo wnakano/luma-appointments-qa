@@ -1,4 +1,4 @@
-from ...states.conversational_qa import QAState
+from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Nodes,
 	Routes, 
@@ -20,10 +20,10 @@ class ClarificationNode:
 
 	def __call__(self, state: QAState) -> QAState:
 		logger.info("[NODE] ClarificationNode")
-		current_node = state.get("current_node")
-		route = state.get("route")
-		user_message = state.get("user_message")
-		messages = state.get("messages")
+		current_node = state.get(StateKeys.CURRENT_NODE)
+		route = state.get(StateKeys.ROUTE)
+		user_message = state.get(StateKeys.USER_MESSAGE)
+		messages = state.get(StateKeys.MESSAGES)
 
 		if current_node == Nodes.VERIFICATION_PATIENT:
 			verification_info = state.get("verification_info", None)
@@ -33,7 +33,7 @@ class ClarificationNode:
 			# state["appointment_request_counter"] += 1
 
 		if current_node == Nodes.VERIFICATION_APPOINTMENT:
-			appointment_info = state.get("appointment_info", None)
+			appointment_info = state.get(StateKeys.APPOINTMENT_INFO, None)
 			system_prompt = self.clarification_service.appointment_run(
 				appointment_info=appointment_info
 			)
@@ -43,8 +43,8 @@ class ClarificationNode:
 				appointment_info=appointment_info
 			)
 
-		state["current_node"] = Nodes.CLARIFICATION
-		state["messages"] = messages + [
+		state[StateKeys.CURRENT_NODE] = Nodes.CLARIFICATION
+		state[StateKeys.MESSAGES] = messages + [
 			{
 				"user_message": user_message,
 				"system_message": system_prompt

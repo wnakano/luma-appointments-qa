@@ -1,4 +1,4 @@
-from ...states.conversational_qa import QAState
+from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Routes, 
 	Nodes,
@@ -19,10 +19,10 @@ class ActionResponseNode:
 	
 	def __call__(self, state: QAState) -> QAState:
 		logger.info("[NODE] ActionResponseNode")
-		confirmation_result = state.get("confirmation_intent")
-		current_intent = state.get("current_intent")
-		messages = state.get("messages", [])
-		user_message = state.get("user_message")
+		confirmation_result = state.get(StateKeys.CONFIRMATION_INTENT)
+		current_intent = state.get(StateKeys.CURRENT_INTENT)
+		messages = state.get(StateKeys.MESSAGES, [])
+		user_message = state.get(StateKeys.USER_MESSAGE)
 
 		if current_intent == IntentType.LIST_APPOINTMENTS:
 			system_message = messages[-1]["system_message"]
@@ -40,13 +40,13 @@ class ActionResponseNode:
 
 		system_message += "\nIs there anything else I can do for you?"
 
-		state["messages"] = messages + [
+		state[StateKeys.MESSAGES] = messages + [
 			{
 				"user_message": user_message,
 				"system_message": system_message
 			}
 		]
-		state["current_node"] = Nodes.ACTION_RESPONSE
+		state[StateKeys.CURRENT_NODE] = Nodes.ACTION_RESPONSE
 
 		return state
 

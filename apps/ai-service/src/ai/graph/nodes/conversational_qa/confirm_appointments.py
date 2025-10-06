@@ -1,4 +1,4 @@
-from ...states.conversational_qa import QAState
+from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Nodes,
 	DBAppointmentStatus
@@ -18,7 +18,7 @@ class ConfirmAppointmentNode:
 	
 	def __call__(self, state: QAState) -> QAState:
 		logger.info("[NODE] ConfirmAppointmentNode")
-		appointment_record = state.get("appointment_record")
+		appointment_record = state.get(StateKeys.APPOINTMENT_INFO)
 		appointment_id = appointment_record.appointment_id
 
 		_ = self.query_orm_service.update_appointment_status(
@@ -26,6 +26,6 @@ class ConfirmAppointmentNode:
 			new_status=DBAppointmentStatus.CONFIRMED
 		)
 
-		state["current_node"] = Nodes.CONFIRM_APPOINTMENTS
+		state[StateKeys.CURRENT_NODE] = Nodes.CONFIRM_APPOINTMENTS
 		return state
 

@@ -2,7 +2,7 @@ from datetime import datetime
 from textwrap import dedent
 from typing import Any, Dict, List
 
-from ...states.conversational_qa import QAState
+from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Nodes,
 	Routes, 
@@ -21,11 +21,11 @@ class ListAppointmentsNode:
 	
 	def __call__(self, state: QAState) -> QAState:
 		logger.info("[NODE] ListAppointmentsNode")
-		appointments = state.get("appointments", [])
-		messages = state.get("messages", [])
-		user_message = state.get("user_message", "")
+		appointments = state.get(StateKeys.APPOINTMENTS, [])
+		messages = state.get(StateKeys.MESSAGES, [])
+		user_message = state.get(StateKeys.USER_MESSAGE, "")
 
-		user_record = state.get("user_record", None)
+		user_record = state.get(StateKeys.USER_RECORD, None)
 		user_name = ""
 		if user_record:
 			full_name = user_record.full_name
@@ -36,8 +36,8 @@ class ListAppointmentsNode:
 			appointments=appointments
 		)
 
-		state["current_node"] = Nodes.LIST_APPOINTMENTS
-		state["messages"] = messages + [
+		state[StateKeys.CURRENT_NODE] = Nodes.LIST_APPOINTMENTS
+		state[StateKeys.MESSAGES] = messages + [
 			{
 				"user_message": user_message,
 				"system_message": appointment_list_output_message

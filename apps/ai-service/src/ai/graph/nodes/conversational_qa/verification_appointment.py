@@ -1,4 +1,4 @@
-from ...states.conversational_qa import QAState
+from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Routes, 
 	Nodes,
@@ -22,12 +22,12 @@ class VerificationAppointmentNode:
 	
 	def __call__(self, state: QAState) -> QAState:
 		logger.info("[NODE] VerificationAppointmentNode")
-		
-		appointment_info = state.get("appointment_info", None)
-		appointment_record = state.get("appointment_record", None)
-		appointments = state.get("appointments", [])
-		user_record = state.get("user_record", None)
-		current_intent = state.get("current_intent")
+
+		appointment_info = state.get(StateKeys.APPOINTMENT_INFO, None)
+		appointment_record = state.get(StateKeys.APPOINTMENT_RECORD, None)
+		appointments = state.get(StateKeys.APPOINTMENTS, [])
+		user_record = state.get(StateKeys.USER_RECORD, None)
+		current_intent = state.get(StateKeys.CURRENT_INTENT)
 
 
 		logger.info(f"appointments = {appointments}")
@@ -40,7 +40,7 @@ class VerificationAppointmentNode:
 				patient_id=user_record.user_id
 			)
 			logger.info(f"appointments = {appointments}")
-			state["appointments"] = appointments
+			state[StateKeys.APPOINTMENTS] = appointments
 		
 		logger.info(f"current_intent = {current_intent}")
 		if current_intent == IntentType.LIST_APPOINTMENTS:
@@ -85,18 +85,18 @@ class VerificationAppointmentNode:
 								appointment_date=appointment_["starts_at"],
 								specialty=appointment_["provider"]["specialty"]
 							)
-							state["appointment_record"] = appointment_record
+							state[StateKeys.APPOINTMENT_RECORD] = appointment_record
 							route = Routes.VERIFIED
 						else:
-							state["appointment_record"] = None
+							state[StateKeys.APPOINTMENT_RECORD] = None
 							route = Routes.NOT_VERIFIED
 			else:
 				route = Routes.NOT_VERIFIED
 
 
-		
-		state["current_node"] = Nodes.VERIFICATION_APPOINTMENT
-		state["route"] = route
+
+		state[StateKeys.CURRENT_NODE] = Nodes.VERIFICATION_APPOINTMENT
+		state[StateKeys.ROUTE] = route
 
 		return state
 

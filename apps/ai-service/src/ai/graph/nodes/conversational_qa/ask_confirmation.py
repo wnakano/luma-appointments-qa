@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from ...states.conversational_qa import QAState
+from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Nodes,
 	Routes, 
@@ -18,12 +18,12 @@ class AskConfirmationNode:
 	
 	def __call__(self, state: QAState) -> QAState:
 		logger.info("[NODE] AskConfirmationNode")
-		appointment_record = state.get("appointment_record")
-		appointments = state.get("appointments")
-		user_message = state.get("user_message")
-		user_record = state.get("user_record")
-		current_intent = state.get("current_intent")
-		messages = state.get("messages", [])
+		appointment_record = state.get(StateKeys.APPOINTMENT_INFO)
+		appointments = state.get(StateKeys.APPOINTMENTS)
+		user_message = state.get(StateKeys.USER_MESSAGE)
+		user_record = state.get(StateKeys.USER_RECORD)
+		current_intent = state.get(StateKeys.CURRENT_INTENT)
+		messages = state.get(StateKeys.MESSAGES, [])
 		
 		appointment_id = appointment_record.appointment_id
 		appointment = [appt for appt in appointments if str(appointment_id) == str(appt['id'])][0]
@@ -56,8 +56,8 @@ class AskConfirmationNode:
 			f"at {clinic_name} at {date_str} {time_str} with Dr. {provider} (specialty: {specialty})?"
 		)
 
-		state["current_node"] = Nodes.ASK_CONFIRMATION
-		state["messages"] = messages + [
+		state[StateKeys.CURRENT_NODE] = Nodes.ASK_CONFIRMATION
+		state[StateKeys.MESSAGES] = messages + [
 			{
 				"user_message": user_message,
 				"system_message": ask_prompt

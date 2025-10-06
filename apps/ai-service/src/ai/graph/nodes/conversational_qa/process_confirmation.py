@@ -1,4 +1,4 @@
-from ...states.conversational_qa import QAState
+from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Routes, 
 	Nodes,
@@ -27,11 +27,11 @@ class ProcessConfirmationNode:
 	
 	def __call__(self, state: QAState) -> QAState:
 		logger.info("[NODE] ProcessConfirmationNode")
-		appointment_record = state.get("appointment_record")
+		appointment_record = state.get(StateKeys.APPOINTMENT_INFO)
 		appointment_id = appointment_record.appointment_id
-		user_message = state.get("user_message")
-		current_intent = state.get("current_intent")
-		messages = state.get("messages", [])
+		user_message = state.get(StateKeys.USER_MESSAGE)
+		current_intent = state.get(StateKeys.CURRENT_INTENT)
+		messages = state.get(StateKeys.MESSAGES, [])
 		
 		confirmation_result = self.process_confirmation_service.run(
 			user_message=user_message
@@ -49,18 +49,18 @@ class ProcessConfirmationNode:
 				new_status=new_status
 			)
 			logger.info(f"Appointment: {appointment_id} -> {new_status}")
-			state["appointments"] = []
+			state[StateKeys.APPOINTMENTS] = []
 			
 		elif confirmation_intent == ConfirmationIntent.REJECT:
 			route = Routes.ACTION_REJECTED
-			state["appointments"] = []
+			state[StateKeys.APPOINTMENTS] = []
 		else:
 			route = Routes.ACTION_UNCLEAR
 
-		state["confirmation_intent"] = confirmation_result
-		state["route"] = route
+		state[StateKeys.CONFIRMATION_INTENT] = confirmation_result
+		state[StateKeys.ROUTE] = route
 
-		state["current_node"] = Nodes.PROCESS_CONFIRMATION
+		state[StateKeys.CURRENT_NODE] = Nodes.PROCESS_CONFIRMATION
 
 		return state
 

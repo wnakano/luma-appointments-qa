@@ -1,4 +1,4 @@
-from ...states.conversational_qa import QAState
+from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
     Nodes,
     Routes, 
@@ -20,12 +20,12 @@ class VerificationGateNode:
     
     def __call__(self, state: QAState) -> QAState:
         logger.info("[NODE] VerificationGateNode")
-        
-        is_verified = state.get("is_verified", False)
-        appointments = state.get("appointments", [])
-        appointment_record = state.get("appointment_record", None)
-        user_record = state.get("user_record", None)
-        
+
+        is_verified = state.get(StateKeys.IS_VERIFIED, False)
+        appointments = state.get(StateKeys.APPOINTMENTS, [])
+        appointment_record = state.get(StateKeys.APPOINTMENT_RECORD, None)
+        user_record = state.get(StateKeys.USER_RECORD, None)
+
         if not all([
             is_verified,
             isinstance(user_record, VerificationRecordModel)
@@ -41,8 +41,8 @@ class VerificationGateNode:
         else:
             route = Routes.VERIFIED
 
-        state['route'] = route
-        state["current_node"] = Nodes.VERIFICATION_GATE
+        state[StateKeys.ROUTE] = route
+        state[StateKeys.CURRENT_NODE] = Nodes.VERIFICATION_GATE
 
         return state
 

@@ -1,4 +1,4 @@
-from ...states.conversational_qa import QAState
+from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Nodes,
 	Routes, 
@@ -24,15 +24,15 @@ class QAAnswerNode:
 			state=state
 		)
 		system_message: QAAnswerModel = qa_result.qa_answer
-		user_message = state.get("user_message", "")
+		user_message = state.get(StateKeys.USER_MESSAGE, "")
 
-		state["messages"] = state.get("messages", []) + [
+		state[StateKeys.MESSAGES] = state.get(StateKeys.MESSAGES, []) + [
 			{
 				"user_message": user_message,
 				"system_message": system_message
 			}
 		]
-		state["current_node"] = Nodes.QA_ANSWER
+		state[StateKeys.CURRENT_NODE] = Nodes.QA_ANSWER
 
 		return state
 
