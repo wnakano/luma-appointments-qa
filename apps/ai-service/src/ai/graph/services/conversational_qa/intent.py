@@ -18,7 +18,8 @@ class IntentService(LLMService):
 		IntentType.LIST_APPOINTMENTS: "User wants to see their appointments",
 		IntentType.CONFIRM_APPOINTMENT: "User wants to confirm an existing appointment",
 		IntentType.CANCEL_APPOINTMENT: "User wants to cancel an appointment",
-
+		IntentType.USER_INFORMATION: "User is just sharing his information",
+		IntentType.APPOINTMENT_INFORMATION: "User is just sharing appointment information without any action"
 	}
 
 	def __init__(
@@ -50,7 +51,7 @@ class IntentService(LLMService):
 					"user_message": user_message
 				}
 			)
-			logger.info(f"Intent → {result}")
+			# logger.info(f"Intent → {result}")
 
 			return result
 		
