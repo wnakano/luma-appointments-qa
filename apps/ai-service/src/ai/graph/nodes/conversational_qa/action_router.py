@@ -1,5 +1,6 @@
 from ...states.conversational_qa import QAState
 from ...types.conversational_qa import (
+    Nodes,
     Routes, 
     IntentType
 )
@@ -16,7 +17,11 @@ class ActionRouterNode:
     def __call__(self, state: QAState) -> QAState:
         logger.info("[NODE] ActionRouterNode")
         current_intent = state.get("current_intent")
-        if current_intent == IntentType.CONFIRM_APPOINTMENT:
+
+        if current_intent == IntentType.APPOINTMENT_INFORMATION:
+            route = Routes.INTENT_WAIT
+
+        elif current_intent == IntentType.CONFIRM_APPOINTMENT:
             route = Routes.INTENT_CONFIRM
 
         elif current_intent == IntentType.CANCEL_APPOINTMENT:
@@ -27,6 +32,7 @@ class ActionRouterNode:
         
         logger.info(f"[NODE] ActionRouterNode: router -> {route}")
         state["route"] = route
+        state["current_node"] = Nodes.ACTION_ROUTER
         
         return state
 
