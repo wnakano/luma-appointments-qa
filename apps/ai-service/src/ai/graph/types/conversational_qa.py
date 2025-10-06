@@ -4,19 +4,19 @@ from typing import Dict, Optional
 
 
 class IntentType(str, Enum):
-    """Enumeration of all possible user intents"""
-    
-    GENERAL_QA: str = "general_qa"
-    LIST_APPOINTMENTS: str = "list_appointments"
-    CONFIRM_APPOINTMENT: str = "confirm_appointment"
-    CANCEL_APPOINTMENT: str = "cancel_appointment"
-    # PROVIDE_INFO: str = "provide_info"
-    # CONFIRM_YES: str = "confirm_yes"
-    # CONFIRM_NO: str = "confirm_no"
-    
-    def __str__(self):
-        return self.value
+	"""Enumeration of all possible user intents"""
 	
+	GENERAL_QA: str = "general_qa"
+	LIST_APPOINTMENTS: str = "list_appointments"
+	CONFIRM_APPOINTMENT: str = "confirm_appointment"
+	CANCEL_APPOINTMENT: str = "cancel_appointment"
+	USER_INFORMATION: str = "user_information"
+	APPOINTMENT_INFORMATION: str = "appointment_information"
+	
+	def __str__(self):
+		return self.value
+	
+
 class FlowPhase(str, Enum):
 	INITIAL: str = "INITIAL"
 	COLLECTION: str = "COLLECTION"
@@ -26,6 +26,7 @@ class FlowPhase(str, Enum):
 	MENU: str = "MENU"
 	ACTION_PROCESSING: str = "ACTION_PROCESSING"
 
+
 class Nodes(str, Enum):    
 	CONVERSATION_MANAGER: str = "CONVERSATION_MANAGER"
 	QA_ANSWER: str = "QA_ANSWER"
@@ -34,6 +35,7 @@ class Nodes(str, Enum):
 	VERIFICATION_APPOINTMENT: str = "VERIFICATION_APPOINTMENT"
 	CLARIFICATION: str = "CLARIFICATION"
 	ACTION_ROUTER: str = "ACTION_ROUTER"
+	WAIT_APPOINTMENT: str = "WAIT_APPOINTMENT"
 	LIST_APPOINTMENTS: str = "LIST_APPOINTMENTS"
 	CONFIRM_APPOINTMENTS: str = "CONFIRM_APPOINTMENTS"
 	CANCEL_APPOINTMENTS: str = "CANCEL_APPOINTMENTS"
@@ -45,12 +47,13 @@ class Nodes(str, Enum):
 
 
 class Routes(str, Enum):
-	ACTION_APPPOINTMENT: str = "ACTION_APPPOINTMENT"
+	ACTION_APPOINTMENT: str = "ACTION_APPOINTMENT"
 	ACTION_QA: str = "QA"
 	USER_VERIFICATION: str = "USER_VERIFICATION" 
 	APPOINTMENT_VERIFICATION: str = "APPOINTMENT_VERIFICATION" 
 	VERIFIED: str = "VERIFIED"
 	NOT_VERIFIED: str = "NOT_VERIFIED"
+	INTENT_WAIT: str = "INTENT_WAIT"
 	INTENT_LIST: str = "INTENT_LIST"
 	INTENT_CONFIRM: str = "INTENT_CONFIRM"
 	INTENT_CANCEL: str = "INTENT_CANCEL"
@@ -60,6 +63,21 @@ class Routes(str, Enum):
 	ACTION_REJECTED: str = "ACTION_REJECTED"
 	ACTION_UNCLEAR: str = "ACTION_UNCLEAR" 
 
+	
+class DBAppointmentStatus(str, Enum):
+	SCHEDULED: str = "scheduled"
+	CONFIRMED: str = "confirmed"
+	CANCELED_BY_PATIENT: str = "canceled_by_patient"
+
+	def __str__(self):
+		return self.value
+
+
+class ConfirmationIntent(str, Enum):
+	"""Enumeration of possible confirmation intents"""
+	CONFIRM: str = "confirm"
+	REJECT: str = "reject"
+	UNCLEAR: str = "unclear"
 	
 
 # class UserSession:
