@@ -6,8 +6,6 @@ from .verification_appointment import VerificationAppointmentNode
 from .clarification import ClarificationNode
 from .action_router import ActionRouterNode
 from .list_appointments import ListAppointmentsNode
-from .confirm_appointments import ConfirmAppointmentNode
-from .cancel_appointments import CancelAppointmentNode
 from .ask_confirmation import AskConfirmationNode
 from .process_confirmation import ProcessConfirmationNode
 from .action_response import ActionResponseNode
@@ -22,8 +20,6 @@ __all__ = [
     "ClarificationNode",
     "ActionRouterNode",
     "ListAppointmentsNode",
-    "ConfirmAppointmentNode",
-    "CancelAppointmentNode",
     "AskConfirmationNode",
     "ProcessConfirmationNode",
     "ActionResponseNode",
