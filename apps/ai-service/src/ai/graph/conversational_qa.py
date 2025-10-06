@@ -24,7 +24,9 @@ from .services.conversational_qa import (
 	IntentService,
 	QAAnswerService,
 	QueryORMService,
-	AppointmentMatchService
+	AppointmentMatchService,
+	ProcessConfirmationService,
+	ClarificationService
 )
 
 from .nodes.conversational_qa import (
@@ -70,9 +72,10 @@ class QAGraph(BaseGraph):
 
 		intent_service = IntentService(model="gpt-4o-mini", temp=0.0)
 		qa_service = QAAnswerService(model="gpt-4o-mini", temp=0.3)
-
 		query_orm_service = QueryORMService()
 		appointment_match_service = AppointmentMatchService(query_orm_service=query_orm_service)
+		process_confirmation_service = ProcessConfirmationService(model="gpt-4o-mini", temp=0.0)
+		clarification_service = ClarificationService()
 
 		nodes = {
 			Nodes.CONVERSATION_MANAGER: ConversationManagerNode(intent_service=intent_service),
@@ -83,13 +86,18 @@ class QAGraph(BaseGraph):
 				query_orm_service=query_orm_service,
 				appointment_match_service=appointment_match_service
 			),
-			Nodes.CLARIFICATION: ClarificationNode(),
+			Nodes.CLARIFICATION: ClarificationNode(
+				clarification_service=clarification_service
+			),
 			Nodes.ACTION_ROUTER: ActionRouterNode(),
 			Nodes.LIST_APPOINTMENTS: ListAppointmentsNode(),
-			Nodes.CONFIRM_APPOINTMENTS: ConfirmAppointmentNode(),
-			Nodes.CANCEL_APPOINTMENTS: CancelAppointmentNode(),
+			Nodes.CONFIRM_APPOINTMENTS: ConfirmAppointmentNode(query_orm_service=query_orm_service),
+			Nodes.CANCEL_APPOINTMENTS: CancelAppointmentNode(query_orm_service=query_orm_service),
 			Nodes.ASK_CONFIRMATION: AskConfirmationNode(),
-			Nodes.PROCESS_CONFIRMATION: ProcessConfirmationNode(),
+			Nodes.PROCESS_CONFIRMATION: ProcessConfirmationNode(
+				query_orm_service=query_orm_service,
+				process_confirmation_service=process_confirmation_service
+			),
 			Nodes.ACTION_RESPONSE: ActionResponseNode(),
 		}
 		return nodes
@@ -128,10 +136,10 @@ class QAGraph(BaseGraph):
 
 		graph.add_conditional_edges(
 			Nodes.CONVERSATION_MANAGER,
-			lambda state: state.get("route", Routes.ACTION_APPPOINTMENT),
+			lambda state: state.get("route", Routes.ACTION_APPOINTMENT),
 			{
 				Routes.ACTION_QA: Nodes.QA_ANSWER,
-				Routes.ACTION_APPPOINTMENT: Nodes.VERIFICATION_GATE
+				Routes.ACTION_APPOINTMENT: Nodes.VERIFICATION_GATE
 			}
 		)
 		graph.add_edge(Nodes.QA_ANSWER, Nodes.CONVERSATION_MANAGER)
@@ -166,14 +174,13 @@ class QAGraph(BaseGraph):
 			Nodes.ACTION_ROUTER,
 			lambda state: state.get("route", "collect_next"),
 			{
+				Routes.INTENT_WAIT: Nodes.CLARIFICATION,
 				Routes.INTENT_LIST: Nodes.LIST_APPOINTMENTS,
-				Routes.INTENT_CONFIRM: Nodes.CONFIRM_APPOINTMENTS,
-				Routes.INTENT_CANCEL: Nodes.CANCEL_APPOINTMENTS,
+				Routes.INTENT_CONFIRM: Nodes.ASK_CONFIRMATION,
+				Routes.INTENT_CANCEL: Nodes.ASK_CONFIRMATION,
 			}
 		)
 		graph.add_edge(Nodes.LIST_APPOINTMENTS, Nodes.ACTION_RESPONSE)
-		graph.add_edge(Nodes.CONFIRM_APPOINTMENTS, Nodes.ASK_CONFIRMATION)
-		graph.add_edge(Nodes.CANCEL_APPOINTMENTS, Nodes.ASK_CONFIRMATION)
 	
 		graph.add_edge(Nodes.ASK_CONFIRMATION, Nodes.PROCESS_CONFIRMATION)
 		graph.add_conditional_edges(
@@ -181,22 +188,15 @@ class QAGraph(BaseGraph):
 			lambda state: state.get("route", Routes.ACTION_REJECTED),
 			{
 				Routes.ACTION_CONFIRMED: Nodes.ACTION_RESPONSE,
-				Routes.ACTION_REJECTED: Nodes.CLARIFICATION,
+				Routes.ACTION_REJECTED: Nodes.ACTION_RESPONSE,
 				Routes.ACTION_UNCLEAR: Nodes.ASK_CONFIRMATION
 			}
 		)
 
-		graph.add_conditional_edges(
-        Nodes.CLARIFICATION,
-			lambda state: state.get("route", Routes.COLLECTING_DATA),
-			{
-				Routes.COLLECTING_DATA: Nodes.CONVERSATION_MANAGER, 
-				Routes.DATA_COLLECTED: Nodes.ASK_CONFIRMATION,
-			}
-		)
 		
-		graph.add_edge(Nodes.ACTION_RESPONSE, Nodes.CONVERSATION_MANAGER)
+		graph.add_edge(Nodes.CLARIFICATION, Nodes.CONVERSATION_MANAGER)
 
+		graph.add_edge(Nodes.ACTION_RESPONSE, Nodes.CONVERSATION_MANAGER)
 
 		interrupt_config = self._get_interrupt_configuration()
 		
