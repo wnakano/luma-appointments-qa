@@ -20,7 +20,7 @@ logger = Logger(__name__)
 
 class VerificationAppointmentNode:
 
-	MIN_REQUIRED_FIELDS = 2
+	MIN_REQUIRED_FIELDS = 1
 	APPOINTMENT_ACTION_INTENTS = {
 		IntentType.CONFIRM_APPOINTMENT,
 		IntentType.CANCEL_APPOINTMENT,
