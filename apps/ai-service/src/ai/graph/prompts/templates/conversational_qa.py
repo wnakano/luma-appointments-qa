@@ -88,10 +88,10 @@ class ConversationalQAMessages:
 
 	##################### CLARIFICATION USER TEMPLATES #####################
 	base_clarification_user_system: str = (
-		"To continue is necessary to verificate you in the system. Could you provide the following information:"
+		"To continue is necessary to verificate you in the system. Could you provide the following information: "
 	)
 	base_clarification_appointment_system: str = (
-		"To continue is necessary to collect more informationa about your appointment. Could you provide the following information:"
+		"To continue is necessary to collect more informationa about your appointment. Could you provide at least two of the following information: "
 	)
 	base_clarification_appointment_wait_system: str = (
 		"To continue is necessary to choose an action: confirm or cancel appointment"
