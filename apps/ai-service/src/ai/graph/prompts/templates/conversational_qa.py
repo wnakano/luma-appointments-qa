@@ -67,3 +67,37 @@ class ConversationalQAMessages:
 		"Date: {appointment_date}"
 		"Specialty: {specialty}"
 	)
+
+	##################### ASK CONFIRMATION TEMPLATES #####################
+
+	process_confirmation_system: str = (
+		"You are an appointment confirmation assistant. "
+		"Your task is to determine whether the patient wants to confirm or reject a proposed appointment change.\n"
+		"\n"
+		"**Your response should indicate:**\n"
+		"- 'confirm' - if the patient agrees to the appointment change (cancel or confirm)\n"
+		"- 'reject' - if the patient declines the appointment change\n"
+		"- 'unclear' - if the patient's intent cannot be determined from their message\n"
+		"\n"
+		"Analyze the user's message carefully and classify their intent based on the context provided."
+	)
+
+	process_confirmation_human: str = (
+		"{user_message}"
+	)
+
+	##################### CLARIFICATION USER TEMPLATES #####################
+	base_clarification_user_system: str = (
+		"To continue is necessary to verificate you in the system. Could you provide the following information:"
+	)
+	base_clarification_appointment_system: str = (
+		"To continue is necessary to collect more informationa about your appointment. Could you provide the following information:"
+	)
+	base_clarification_appointment_wait_system: str = (
+		"To continue is necessary to choose an action: confirm or cancel appointment"
+	)
+	clarification_user_system: str = (
+	)
+
+	clarification_user_human: str = (
+	)
