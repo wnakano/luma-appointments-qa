@@ -1,8 +1,7 @@
 from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Nodes,
-	Routes, 
-	IntentType
+	MessageKeys
 )
 from ...services.conversational_qa import QAAnswerService
 from ...models.conversational_qa import QAAnswerModel
@@ -28,8 +27,8 @@ class QAAnswerNode:
 
 		state[StateKeys.MESSAGES] = state.get(StateKeys.MESSAGES, []) + [
 			{
-				"user_message": user_message,
-				"system_message": system_message
+				MessageKeys.USER_MESSAGE: user_message,
+				MessageKeys.SYSTEM_MESSAGE: system_message
 			}
 		]
 		state[StateKeys.CURRENT_NODE] = Nodes.QA_ANSWER

@@ -5,8 +5,7 @@ from typing import Any, Dict, List
 from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Nodes,
-	Routes, 
-	IntentType
+	MessageKeys
 )
 from utils import Logger
 
@@ -39,8 +38,8 @@ class ListAppointmentsNode:
 		state[StateKeys.CURRENT_NODE] = Nodes.LIST_APPOINTMENTS
 		state[StateKeys.MESSAGES] = messages + [
 			{
-				"user_message": user_message,
-				"system_message": appointment_list_output_message
+				MessageKeys.USER_MESSAGE: user_message,
+				MessageKeys.SYSTEM_MESSAGE: appointment_list_output_message
 			}
 		]
 		return state

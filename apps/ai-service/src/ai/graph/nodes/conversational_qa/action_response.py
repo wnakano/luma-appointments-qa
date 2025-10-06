@@ -1,10 +1,9 @@
 from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
-	Routes, 
 	Nodes,
 	IntentType,
 	ConfirmationIntent,
-	DBAppointmentStatus
+	MessageKeys,
 )
 from utils import Logger
 
@@ -42,8 +41,8 @@ class ActionResponseNode:
 
 		state[StateKeys.MESSAGES] = messages + [
 			{
-				"user_message": user_message,
-				"system_message": system_message
+				MessageKeys.USER_MESSAGE: user_message,
+				MessageKeys.SYSTEM_MESSAGE: system_message
 			}
 		]
 		state[StateKeys.CURRENT_NODE] = Nodes.ACTION_RESPONSE

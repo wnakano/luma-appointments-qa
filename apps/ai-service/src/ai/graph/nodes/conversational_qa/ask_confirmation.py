@@ -3,7 +3,7 @@ from datetime import datetime
 from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Nodes,
-	Routes, 
+	MessageKeys, 
 	IntentType
 )
 from utils import Logger
@@ -59,8 +59,8 @@ class AskConfirmationNode:
 		state[StateKeys.CURRENT_NODE] = Nodes.ASK_CONFIRMATION
 		state[StateKeys.MESSAGES] = messages + [
 			{
-				"user_message": user_message,
-				"system_message": ask_prompt
+				MessageKeys.USER_MESSAGE: user_message,
+				MessageKeys.SYSTEM_MESSAGE: ask_prompt
 			}
 		]
 

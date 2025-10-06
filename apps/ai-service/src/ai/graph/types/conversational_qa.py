@@ -78,7 +78,13 @@ class ConfirmationIntent(str, Enum):
 	CONFIRM: str = "confirm"
 	REJECT: str = "reject"
 	UNCLEAR: str = "unclear"
-	
+
+
+class MessageKeys:
+    """Constants for message dictionary keys."""
+    USER_MESSAGE = "user_message"
+    SYSTEM_MESSAGE = "system_message"
+
 
 # class UserSession:
 # 	def __init__(self):

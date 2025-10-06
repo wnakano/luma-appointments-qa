@@ -2,7 +2,7 @@ from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
 	Nodes,
 	Routes, 
-	IntentType
+	MessageKeys
 )
 from ...services.conversational_qa import ClarificationService
 from utils import Logger
@@ -46,8 +46,8 @@ class ClarificationNode:
 		state[StateKeys.CURRENT_NODE] = Nodes.CLARIFICATION
 		state[StateKeys.MESSAGES] = messages + [
 			{
-				"user_message": user_message,
-				"system_message": system_prompt
+				MessageKeys.USER_MESSAGE: user_message,
+				MessageKeys.SYSTEM_MESSAGE: system_prompt
 			}
 		]
 
