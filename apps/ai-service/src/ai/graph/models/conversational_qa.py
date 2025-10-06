@@ -1,16 +1,17 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from ..types.conversational_qa import IntentType
+from ..types.conversational_qa import (
+    IntentType,
+    ConfirmationIntent
+)
 
 
 class UserIntentModel(BaseModel):
     """Base model for user intent classification"""
-    
     intent_type: IntentType = Field(
         description="The primary intent of the user's message"
     )
-    
     confidence: float = Field(
         description="Confidence score between 0 and 1",
         ge=0.0,
@@ -20,7 +21,6 @@ class UserIntentModel(BaseModel):
 
 class VerificationInfoModel(BaseModel):
     """Model for extracting user verification information"""
-    
     full_name: Optional[str] = Field(
         None,
         description="User's full name if provided"
@@ -122,8 +122,36 @@ class ConversationIntentModel(BaseModel):
     raw_query: str = Field(description="The original user query")
 
 
-class QAAnswerModel:
-    system_answer: str = Field(
+class AppointmentConfirmationResponse(BaseModel):
+    """
+    Structured response for appointment confirmation classification.
+    This model is used to bind LLM outputs for appointment confirmations.
+    """
+    intent: ConfirmationIntent = Field(
+        ...,
+        description="The patient's intent regarding the appointment change: confirm, reject, or unclear"
+    )
+    confidence: Optional[float] = Field(
+        None,
+        ge=0.0,
+        le=1.0,
+        description="Confidence score of the classification (0.0 to 1.0)"
+    )
+    reasoning: Optional[str] = Field(
+        None,
+        description="Brief explanation of why this intent was classified"
+    )
+    extracted_concerns: Optional[str] = Field(
+        None,
+        description="Any concerns or conditions mentioned by the patient"
+    )
+
+    class Config:
+        use_enum_values = True
+
+
+class QAAnswerModel(BaseModel):
+    qa_answer: str = Field(
         ...,
         description="Assistant answer based on user's question"
     )
