@@ -38,8 +38,6 @@ from .nodes.conversational_qa import (
 	ClarificationNode,
 	ActionRouterNode,
 	ListAppointmentsNode,
-	ConfirmAppointmentNode,
-	CancelAppointmentNode,
 	AskConfirmationNode,
 	ProcessConfirmationNode,
 	ActionResponseNode
@@ -91,8 +89,6 @@ class QAGraph(BaseGraph):
 			),
 			Nodes.ACTION_ROUTER: ActionRouterNode(),
 			Nodes.LIST_APPOINTMENTS: ListAppointmentsNode(),
-			Nodes.CONFIRM_APPOINTMENTS: ConfirmAppointmentNode(query_orm_service=query_orm_service),
-			Nodes.CANCEL_APPOINTMENTS: CancelAppointmentNode(query_orm_service=query_orm_service),
 			Nodes.ASK_CONFIRMATION: AskConfirmationNode(),
 			Nodes.PROCESS_CONFIRMATION: ProcessConfirmationNode(
 				query_orm_service=query_orm_service,
