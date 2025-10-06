@@ -85,23 +85,21 @@ class QueryORMService:
 		logger.info(f"Updating appointment {appointment_id} to status '{new_status}'")
 		if not isinstance(appointment_id, UUID):
 			appointment_id = UUID(appointment_id)
+
 		VALID_STATUSES = {
 			'confirmed', 
-			'canceled', 
+			'canceled_by_patient', 
 		}
 		engine = DatabaseEngine()
 		session: Session = engine.get_session()
 
-		# Fetch the appointment
 		appointment = session.query(AppointmentORM).filter(
 			AppointmentORM.id == appointment_id
 		).first()
 		
 		
-		# Update the status
 		appointment.status = new_status
 		
-		# Commit the changes
 		session.commit()
 		session.refresh(appointment)
 		
