@@ -20,29 +20,27 @@ class VerificationPatientNode:
     
     def __call__(self, state: QAState) -> QAState:
         logger.info("[NODE] VerificationPatientNode")
-
-        phone_number = state.get("phone_number", "")
-        date_of_birth = state.get("date_of_birth", "")
         
         verification_info = state.get('user_info')
-        
-        user_record_db = self.query_orm_service.find_user(
-            user_info=verification_info
-        )
-        if user_record_db:
-            user_record_db = user_record_db[0]
-            user_record = VerificationRecordModel(
-                user_id=user_record_db['id'],
-                full_name=user_record_db['full_name'],
-                phone_number=user_record_db['phone_number'],
-                date_of_birth=user_record_db['date_of_birth'],
+        if verification_info:
+            user_record_db = self.query_orm_service.find_user(
+                user_info=verification_info
             )
-            state['user_record'] = user_record
-            state['is_verified'] = True
-            route = Routes.VERIFIED
+            if user_record_db:
+                user_record_db = user_record_db[0]
+                user_record = VerificationRecordModel(
+                    user_id=user_record_db['id'],
+                    full_name=user_record_db['full_name'],
+                    phone_number=user_record_db['phone_number'],
+                    date_of_birth=user_record_db['date_of_birth'],
+                )
+                state['user_record'] = user_record
+                state['is_verified'] = True
+                route = Routes.VERIFIED
+            else:
+                route = Routes.NOT_VERIFIED
         else:
-            route = Routes.NOT_VERIFIED
-
+            route = Routes.NOT_VERIFIED            
         state['route'] = route
         state["current_node"] = Nodes.VERIFICATION_PATIENT
 

@@ -41,11 +41,20 @@ class VerificationAppointmentNode:
 			)
 			logger.info(f"appointments = {appointments}")
 			state["appointments"] = appointments
-			
+		
+		logger.info(f"current_intent = {current_intent}")
 		if current_intent == IntentType.LIST_APPOINTMENTS:
 			route = Routes.VERIFIED
+		elif current_intent == IntentType.USER_INFORMATION:
+			route = Routes.NOT_VERIFIED
+		# elif current_intent == IntentType.APPOINTMENT_INFORMATION:
 
-		elif current_intent in [IntentType.CONFIRM_APPOINTMENT, IntentType.CANCEL_APPOINTMENT]:
+
+		elif current_intent in [
+			IntentType.CONFIRM_APPOINTMENT, 
+			IntentType.CANCEL_APPOINTMENT, 
+			IntentType.APPOINTMENT_INFORMATION
+		]:
 			if appointment_info:
 				doctor_full_name = appointment_info.doctor_full_name
 				clinic_name = appointment_info.clinic_name
@@ -81,6 +90,8 @@ class VerificationAppointmentNode:
 						else:
 							state["appointment_record"] = None
 							route = Routes.NOT_VERIFIED
+			else:
+				route = Routes.NOT_VERIFIED
 
 
 		
