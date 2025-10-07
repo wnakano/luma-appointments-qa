@@ -1,6 +1,8 @@
+import re
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from typing import Optional, List
+
 from ..types.conversational_qa import (
     IntentType,
     ConfirmationIntent
@@ -34,6 +36,37 @@ class VerificationInfoModel(BaseModel):
         description="Date of birth in format like 'March 15, 1985' or '03/15/1985'"
     )
 
+    @field_validator('full_name')
+    @classmethod
+    def format_full_name(cls, v: Optional[str]) -> Optional[str]:
+        if not v or not isinstance(v, str):
+            return v
+        return v.title()
+    
+    @field_validator('phone_number')
+    @classmethod
+    def validate_phone_number(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        pattern = r'^\+\d{10,15}$'
+        if not re.match(pattern, v):
+            v = ""
+        return v
+
+    # @field_validator('date_of_birth')
+    # @classmethod
+    # def validate_date_of_birth(cls, v: Optional[datetime]) -> Optional[datetime]:
+    #     if v is None:
+    #         return v
+        
+    #     if v > datetime.now():
+    #         return None
+        
+    #     if v.year < 1900:
+    #         return None
+        
+    #     return v
+
 class VerificationRecordModel(BaseModel):
     """Model for extracting user verification information"""
     user_id: Optional[str] = Field(
@@ -46,13 +79,14 @@ class VerificationRecordModel(BaseModel):
     )
     phone_number: Optional[str] = Field(
         None,
-        description="Phone number in format like 555-0123 or (555) 012-3456"
+        description="Phone number in format like +<country_code><number> (e.g., +1234567890)"
     )
     date_of_birth: Optional[datetime] = Field(
         None,
-        description="Date of birth in format like 'March 15, 1985' or '03/15/1985'"
+        description="Date of birth in format YYYY-MM-DD (e.g., 1990-01-01)"
     )
-
+    
+    
 class AppointmentInfoModel(BaseModel):
     """Model for referencing a specific appointment"""
     doctor_full_name: Optional[str] = Field(
@@ -154,4 +188,11 @@ class QAAnswerModel(BaseModel):
     qa_answer: str = Field(
         ...,
         description="Assistant answer based on user's question"
+    )
+
+
+class ClarificationPromptModel(BaseModel):
+    clarification_prompt: str = Field(
+        ...,
+        description="Clarification prompt asking user for more details"
     )
