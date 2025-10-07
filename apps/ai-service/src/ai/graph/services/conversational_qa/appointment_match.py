@@ -1,6 +1,6 @@
 from langchain.prompts import PromptTemplate 
 from textwrap import dedent
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from ...states.conversational_qa import QAState
 from ...types.conversational_qa import (
@@ -37,40 +37,31 @@ class AppointmentMatchService(LLMService):
             
             self._validate_inputs(appointments, appointment_info)
             
-            doctor_full_name = appointment_info.doctor_full_name or ""
-            clinic_name = appointment_info.clinic_name or ""
-            appointment_date = appointment_info.appointment_date or ""
-            specialty = appointment_info.specialty or ""
+            logger.info(f" ... Matching against {len(appointments)} appointment(s)")
             
-            criteria_text = self._format_criteria(appointment_info)
-            appointments_text = self._format_appointments(appointments)
+            direct_matches = self._find_direct_matches(appointments, appointment_info)
             
-            logger.info(
-                f" ... Matching against {len(appointments)} appointment(s)"
-            )
-            
-            template = self._build_prompt_template()
-            chain = self.build_structured_chain(
-                template=template,
-                schema=AppointmentMatchModel
-            )
-            
-            result: AppointmentMatchModel = chain.invoke({
-                "criteria_text": criteria_text,
-                "appointments_text": appointments_text,
-                "doctor_full_name": doctor_full_name,
-                "clinic_name": clinic_name,
-                "appointment_date": appointment_date,
-                "specialty": specialty
-            })
-            
-            if result.match_found:
+            if len(direct_matches) == 1:
+                matched_appt = direct_matches[0]
                 logger.info(
-                    f" ... Match found: Appointment ID {result.matched_appointment_id} "
-                    f"(confidence: {result.confidence})"
+                    f" ... Direct match found: Appointment ID {matched_appt['id']}"
                 )
+                return AppointmentMatchModel(
+                    match_found=True,
+                    confidence=1.0,
+                    matched_appointment_id=str(matched_appt['id']),
+                    reasoning="Direct match found based on provided criteria"
+                )
+            
+            elif len(direct_matches) == 0:
+                logger.info(" ... No direct matches found, using LLM for intelligent matching")
             else:
-                logger.info(" ... No match found")
+                logger.info(
+                    f" ... {len(direct_matches)} direct matches found, "
+                    "using LLM to disambiguate"
+                )
+            
+            result = self._match_with_llm(appointments, appointment_info)
             
             return result
             
@@ -78,11 +69,108 @@ class AppointmentMatchService(LLMService):
             logger.error(f"[SERVICE] AppointmentMatchService ERROR: {e}", exc_info=True)
             return self._get_fallback_response()
     
+    def _find_direct_matches(
+        self,
+        appointments: List[Dict[str, Any]],
+        appointment_info: AppointmentInfoModel
+    ) -> List[Dict[str, Any]]:
+        matches = []
+        
+        for appt in appointments:
+            if self._is_direct_match(appt, appointment_info):
+                matches.append(appt)
+        
+        return matches
+    
+    def _is_direct_match(
+        self,
+        appointment: Dict[str, Any],
+        appointment_info: AppointmentInfoModel
+    ) -> bool:
+        if appointment_info.doctor_full_name:
+            appt_doctor = appointment.get('provider', {}).get('full_name', '')
+            if not self._strings_match(appointment_info.doctor_full_name, appt_doctor):
+                return False
+        
+        if appointment_info.clinic_name:
+            appt_clinic = appointment.get('clinic', {}).get('name', '')
+            if not self._strings_match(appointment_info.clinic_name, appt_clinic):
+                return False
+        
+        if appointment_info.specialty:
+            appt_specialty = appointment.get('provider', {}).get('specialty', '')
+            if not self._strings_match(appointment_info.specialty, appt_specialty):
+                return False
+        
+        if appointment_info.appointment_date:
+            appt_date = appointment.get('starts_at', '')
+            if not self._dates_match(appointment_info.appointment_date, appt_date):
+                return False
+        
+        return True
+    
+    def _strings_match(self, str1: str, str2: str) -> bool:
+        if not str1 or not str2:
+            return False
+        
+        normalized1 = str1.lower().strip()
+        normalized2 = str2.lower().strip()
+        
+        return normalized1 in normalized2 or normalized2 in normalized1
+    
+    def _dates_match(self, date1: str, date2: str) -> bool:
+        if not date1 or not date2:
+            return False
+        
+        date1_norm = date1.lower().strip()
+        date2_norm = date2.lower().strip()
+        
+        return date1_norm in date2_norm or date2_norm in date1_norm
+    
+    def _match_with_llm(
+        self,
+        appointments: List[Dict[str, Any]],
+        appointment_info: AppointmentInfoModel
+    ) -> AppointmentMatchModel:
+        doctor_full_name = appointment_info.doctor_full_name or ""
+        clinic_name = appointment_info.clinic_name or ""
+        appointment_date = appointment_info.appointment_date or ""
+        specialty = appointment_info.specialty or ""
+        
+        criteria_text = self._format_criteria(appointment_info)
+        appointments_text = self._format_appointments(appointments)
+        
+        template = self._build_prompt_template()
+        chain = self.build_structured_chain(
+            template=template,
+            schema=AppointmentMatchModel
+        )
+        
+        result: AppointmentMatchModel = chain.invoke({
+            "criteria_text": criteria_text,
+            "appointments_text": appointments_text,
+            "doctor_full_name": doctor_full_name,
+            "clinic_name": clinic_name,
+            "appointment_date": appointment_date,
+            "specialty": specialty
+        })
+        
+        if result.match_found:
+            logger.info(
+                f" ... LLM match found: Appointment ID {result.matched_appointment_id} "
+                f"(confidence: {result.confidence})"
+            )
+        else:
+            logger.info(" ... LLM found no match")
+        
+        return result
+    
     def _validate_inputs(
         self,
         appointments: List[Dict[str, Any]],
         appointment_info: AppointmentInfoModel
     ) -> None:
+
         if not appointments:
             raise ValueError("Appointments list cannot be empty")
         
