@@ -18,7 +18,7 @@ class ActionResponseNode:
 		(IntentType.CONFIRM_APPOINTMENT, ConfirmationIntent.REJECT): "Your appointment has not been confirmed.",
 	}
 	
-	FOLLOW_UP_MESSAGE = "\nIs there anything else I can do for you?"
+	FOLLOW_UP_MESSAGE = "\n\nIs there anything else I can do for you?"
 	
 	def __call__(self, state: QAState) -> QAState:
 		try:
