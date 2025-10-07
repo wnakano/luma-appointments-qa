@@ -124,13 +124,17 @@ class QueryORMService:
 	
 	def find_user(
 		self, 
-		user_info: VerificationInfoModel
+		user_info: VerificationInfoModel,
+		allow_partial: bool = False
 	) -> Optional[List[Dict[str, Any]]]:
 		logger.info("[SERVICE] QueryORMService.find_user")
 		logger.info(f" ... Searching for user with: {user_info.model_dump()}")
 		
 		try:
-			strategies = self._build_search_strategies(user_info)
+			strategies = self._build_search_strategies(
+				user_info=user_info, 
+				allow_partial=allow_partial
+			)
 			
 			for idx, strategy in enumerate(strategies, 1):
 				if not all(strategy.values()):
@@ -154,48 +158,36 @@ class QueryORMService:
 	
 	def _build_search_strategies(
 		self,
-		user_info: VerificationInfoModel
+		user_info: VerificationInfoModel,
+		allow_partial: bool = False
 	) -> List[Dict[str, Any]]:
 
 		strategies = []
 		
-		if all([user_info.full_name, user_info.phone_number, user_info.date_of_birth]):
-			strategies.append({
-				'full_name': user_info.full_name,
-				'phone_number': user_info.phone_number,
-				'date_of_birth': user_info.date_of_birth
-			})
-		
-		# Strategy 2: Two-field combinations
-		if all([user_info.full_name, user_info.phone_number]):
-			strategies.append({
-				'full_name': user_info.full_name,
-				'phone_number': user_info.phone_number
-			})
-		
-		if all([user_info.full_name, user_info.date_of_birth]):
-			strategies.append({
-				'full_name': user_info.full_name,
-				'date_of_birth': user_info.date_of_birth
-			})
-		
-		if all([user_info.phone_number, user_info.date_of_birth]):
-			strategies.append({
-				'phone_number': user_info.phone_number,
-				'date_of_birth': user_info.date_of_birth
-			})
-		
-		# Strategy 3: Single fields
-		if user_info.full_name:
-			strategies.append({
-				'full_name': user_info.full_name
-			})
-		
-		if user_info.phone_number:
-			strategies.append({
-				'phone_number': user_info.phone_number
-			})
-		
+		if not allow_partial:
+			if all([user_info.full_name, user_info.phone_number, user_info.date_of_birth]):
+				strategies.append({
+					'full_name': user_info.full_name,
+					'phone_number': user_info.phone_number,
+					'date_of_birth': user_info.date_of_birth
+				})
+			
+		else:
+			if user_info.full_name:
+				strategies.append({
+					'full_name': user_info.full_name
+				})
+			
+			if user_info.phone_number:
+				strategies.append({
+					'phone_number': user_info.phone_number
+				})
+			
+			if user_info.date_of_birth:
+				strategies.append({
+					'date_of_birth': user_info.date_of_birth
+				})
+			
 		logger.info(f" ... Built {len(strategies)} search strategy(ies)")
 		
 		return strategies

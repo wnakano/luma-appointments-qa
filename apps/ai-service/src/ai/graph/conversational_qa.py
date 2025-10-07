@@ -61,9 +61,9 @@ class QAGraph(BaseGraph):
 		self._nodes = self._define_nodes()
 		self._graph = self._define_graph()
 		
-		mermaid_mmd = self._graph.get_graph().draw_mermaid()
-		mermaid_mmd_path = Path("/app/images/qa-conversational-graph.mmd")
-		mermaid_mmd_path.write_text(mermaid_mmd)
+		# mermaid_mmd = self._graph.get_graph().draw_mermaid()
+		# mermaid_mmd_path = Path("/app/images/qa-conversational-graph.mmd")
+		# mermaid_mmd_path.write_text(mermaid_mmd)
 
 	def _define_nodes(self) -> Dict[str, Any]:
 		"""Instantiate all nodes with their required services"""

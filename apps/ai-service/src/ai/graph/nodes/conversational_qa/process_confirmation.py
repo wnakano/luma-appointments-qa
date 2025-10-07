@@ -69,9 +69,13 @@ class ProcessConfirmationNode:
 					current_intent=current_intent
 				)
 				state[StateKeys.APPOINTMENTS] = []
+				state[StateKeys.APPOINTMENT_INFO] = None
+				state[StateKeys.APPOINTMENT_RECORD] = None
+				
 				logger.info(" ... Cleared appointments from state after confirmation")
 			elif confirmation_intent == ConfirmationIntent.REJECT:
 				self._handle_rejection(appointment_id)
+				state[StateKeys.APPOINTMENT_INFO] = None
 			else:
 				self._handle_unclear_response(confirmation_intent)
 			
