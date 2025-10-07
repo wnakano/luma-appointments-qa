@@ -22,6 +22,8 @@ class ConversationalQAMessages:
 
 	verification_instruction_system: str = (
 		" - Extract any verification information (name, phone, date of birth) if provided"
+		" - The phone number should be in the format +<country_code><number> (e.g., +1234567890)"
+		" - The date of birth should be in the format YYYY-MM-DD (e.g., 1990-01-01)"
 	)
 
 	base_intent_human: str = (
@@ -100,4 +102,57 @@ class ConversationalQAMessages:
 	)
 
 	clarification_user_human: str = (
+	)
+
+	clarification_appointment_system: str = (
+		"You are a helpful clinic assistant helping to identify a patient's appointment."
+
+		"Your task is to generate a natural, friendly message asking for the missing appointment details."
+		"Guidelines:"
+		"- Be polite and helpful"
+		"- Be specific about what appointment information is needed"
+		"- If some information is provided, acknowledge it"
+		"- Keep the message concise (2-3 sentences)"
+		"- End with a clear request for the specific information needed"
+		"Context about the current situation:"
+		"{context}"
+	)
+
+	clarification_appointment_prompt: str = (
+		"Based on the context, generate a natural clarification message."
+		"Current appointment information provided:"
+		"- Doctor's name: {doctor_name}"
+		"- Clinic name: {clinic_name}"
+		"- Appointment date: {appointment_date}"
+		"- Specialty: {specialty}"
+
+		"What information is needed:"
+		"{diagnostic_summary}"
+	)
+
+	clarification_user_system: str = (
+		"You are a helpful clinic assistant helping to verify a patient's identity."
+		"Your task is to generate a natural, friendly clarification message asking for the correct or missing information."
+		"Guidelines:"
+		"- Be polite and professional"
+		"- Be specific about what information is needed"
+		"- If information is incorrect, gently indicate which field(s) don't match"
+		"- If information is missing, clearly state what's needed"
+		"- Keep the message concise (2-3 sentences)"
+		"- Don't apologize excessively"
+		"- End with a clear request for the specific information needed"
+
+		"Context about the current situation:"
+		"{context}"
+	)
+	
+	clarification_user_prompt: str = (
+		"Based on the context, generate a natural clarification message asking for the needed information."
+		"Current information provided:"
+		"- Full name: {full_name}"
+		"- Phone number: {phone_number}"
+		"- Date of birth: {date_of_birth}"
+		"Diagnostic information:"
+		"{diagnostic_summary}"
+		"Generate a friendly, specific clarification message"
 	)
