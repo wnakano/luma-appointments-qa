@@ -6,7 +6,7 @@ from typing import (
 	Union
 )
 from uuid import UUID
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.orm import (
     Session,
@@ -15,7 +15,11 @@ from sqlalchemy.orm import (
 from .tables import DBTables
 from .engine import DatabaseEngine
 # from .models.models import 
-from .models.schemas import Base, AppointmentORM
+from .models.schemas import (
+    Base, 
+    AppointmentORM, 
+    PatientORM
+)
 
 from utils import Logger
 
@@ -140,12 +144,12 @@ class DatabaseReader(DatabaseEngine):
 
 		finally:
 			session.close()
-	
+
 	def get_appointments_by_patient_id(
 		self, 
 		patient_id: UUID,
 		include_past: bool = False
-	) -> List[Dict[str, Any]]:
+	) -> Union[None, List[Dict[str, Any]]]:
 		"""
 		Get all appointments for a patient using SQLAlchemy ORM.
 		
@@ -158,7 +162,7 @@ class DatabaseReader(DatabaseEngine):
 		
 		Returns
 		-------
-		List[Dict[str, Any]]
+		Union[None, List[Dict[str, Any]]]
 			List of appointment records with clinic and provider information
 		"""
 		
@@ -208,6 +212,66 @@ class DatabaseReader(DatabaseEngine):
 			
 		except Exception as e:
 			logger.error(f"get_patient_appointments_orm failed: {e}")
-			raise
 		finally:
 			session.close()
+		return None
+		
+	def get_user(
+		self, 
+		full_name: Union[str, None] = None,
+		phone_number: Union[str, None] = None,
+		date_of_birth: Union[str, None] = None
+	) -> Union[None, List[Dict[str, Any]]]:
+		"""
+		Get all appointments for a patient using SQLAlchemy ORM.
+		
+		Parameters
+		----------
+		patient_id : UUID
+			The UUID of the patient
+		include_past : bool, optional
+			If True, includes past appointments. Default is False (future only).
+		
+		Returns
+		-------
+		List[Dict[str, Any]]
+			List of appointment records with clinic and provider information
+		"""
+		
+		session: Session = self.get_session()
+		patients = []
+		try:
+			conditions = []
+			if full_name is not None:
+				conditions.append(PatientORM.full_name == full_name)
+			if phone_number is not None:
+				conditions.append(PatientORM.phone == phone_number)
+			if date_of_birth is not None:
+				conditions.append(PatientORM.date_of_birth == date_of_birth)
+
+			query = session.query(PatientORM)
+			if conditions:
+				query = query.filter(and_(*conditions))
+			
+			
+			patients_orm = query.all()
+			
+			patients = []
+			for patient_orm in patients_orm:
+				patient = {
+					"id": self._serialize(patient_orm.id),
+					"full_name": patient_orm.full_name,
+					"phone_number": patient_orm.phone,
+					"date_of_birth": patient_orm.date_of_birth,
+				}
+				patients.append(patient)
+			
+			return patients
+			
+		except Exception as e:
+			logger.error(f"get_user failed: {e}")
+			
+		finally:
+			session.close()
+			logger.info(f"patients = {patients}")
+			return patients
