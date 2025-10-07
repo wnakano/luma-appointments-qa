@@ -68,8 +68,8 @@ class ChatbotApp:
             st.session_state.user_id = str(self.uuid_handler.generate_uuid())
         if "session_id" not in st.session_state:
             st.session_state.session_id = str(self.uuid_handler.generate_uuid())
-        if "awaiting_input" not in st.session_state:
-            st.session_state.awaiting_input = None
+        # if "awaiting_input" not in st.session_state:
+        #     st.session_state.awaiting_input = None
         if "user_data" not in st.session_state:
             st.session_state.user_data = {}
     
@@ -152,33 +152,33 @@ class ConversationHandler:
                     unsafe_allow_html=True
                 )
     
-    def handle_user_input_collection(self) -> Optional[str]:
-        """Handle collection of specific user inputs when requested with styled forms"""
-        if st.session_state.awaiting_input == "full_name":
-            full_name = StyledUserInputCollector.collect_full_name()
-            if full_name:
-                logger.info(f"Collected full name: {full_name}")
-                st.session_state.user_data["full_name"] = full_name
-                st.session_state.awaiting_input = None
-                return f"My full name is: {full_name}"
+    # def handle_user_input_collection(self) -> Optional[str]:
+    #     """Handle collection of specific user inputs when requested with styled forms"""
+    #     if st.session_state.awaiting_input == "full_name":
+    #         full_name = StyledUserInputCollector.collect_full_name()
+    #         if full_name:
+    #             logger.info(f"Collected full name: {full_name}")
+    #             st.session_state.user_data["full_name"] = full_name
+    #             st.session_state.awaiting_input = None
+    #             return f"My full name is: {full_name}"
 
-        elif st.session_state.awaiting_input == "mobile_number":
-            mobile = StyledUserInputCollector.collect_mobile_number()
-            if mobile:
-                logger.info(f"Collected mobile number: {mobile}")
-                st.session_state.user_data["mobile_number"] = mobile
-                st.session_state.awaiting_input = None
-                return f"My mobile number is: {mobile}"
+    #     elif st.session_state.awaiting_input == "mobile_number":
+    #         mobile = StyledUserInputCollector.collect_mobile_number()
+    #         if mobile:
+    #             logger.info(f"Collected mobile number: {mobile}")
+    #             st.session_state.user_data["mobile_number"] = mobile
+    #             st.session_state.awaiting_input = None
+    #             return f"My mobile number is: {mobile}"
 
-        elif st.session_state.awaiting_input == "birthday":
-            birthday = StyledUserInputCollector.collect_birthday()
-            if birthday:
-                logger.info(f"Collected birthday: {birthday}")
-                st.session_state.user_data["birthday"] = birthday
-                st.session_state.awaiting_input = None
-                return f"My date of birth is: {birthday}"
+    #     elif st.session_state.awaiting_input == "birthday":
+    #         birthday = StyledUserInputCollector.collect_birthday()
+    #         if birthday:
+    #             logger.info(f"Collected birthday: {birthday}")
+    #             st.session_state.user_data["birthday"] = birthday
+    #             st.session_state.awaiting_input = None
+    #             return f"My date of birth is: {birthday}"
 
-        return None
+    #     return None
     
     def _format_assistant_message(self, text: str) -> str:
         """Format assistant message for proper markdown rendering with preserved styling"""
@@ -314,10 +314,10 @@ class ConversationHandler:
         st.session_state.messages.append({"role": "assistant", "content": assistant_message})
         
         # Check if chatbot is requesting specific input
-        input_needed = StyledUserInputCollector.needs_user_input(assistant_message)
-        if input_needed:
-            st.session_state.awaiting_input = input_needed
-            st.rerun()
+        # input_needed = StyledUserInputCollector.needs_user_input(assistant_message)
+        # if input_needed:
+        #     st.session_state.awaiting_input = input_needed
+        #     st.rerun()
 
 
 class ChatInterface:
@@ -335,11 +335,11 @@ class ChatInterface:
         # Chat container wrapper
         st.markdown('<div class="chat-container">', unsafe_allow_html=True)
         
-        if not st.session_state.messages and not st.session_state.awaiting_input:
-            st.markdown(
-                f"<div class=\"empty-state\">{Constants.EMPTY_STATE_MESSAGE}</div>",
-                unsafe_allow_html=True,
-            )
+        # if not st.session_state.messages and not st.session_state.awaiting_input:
+        #     st.markdown(
+        #         f"<div class=\"empty-state\">{Constants.EMPTY_STATE_MESSAGE}</div>",
+        #         unsafe_allow_html=True,
+        #     )
 
         # Display conversation
         self.conversation_handler.display_messages()
@@ -350,15 +350,15 @@ class ChatInterface:
             return
 
         # Handle special input collection
-        if st.session_state.awaiting_input:
-            prompt = self.conversation_handler.handle_user_input_collection()
-            if prompt:
-                self.conversation_handler.process_user_message(prompt)
-                st.markdown('</div>', unsafe_allow_html=True)
-                st.rerun()
+        # if st.session_state.awaiting_input:
+        #     prompt = self.conversation_handler.handle_user_input_collection()
+        #     if prompt:
+        #         self.conversation_handler.process_user_message(prompt)
+        #         st.markdown('</div>', unsafe_allow_html=True)
+        #         st.rerun()
 
-            st.markdown('</div>', unsafe_allow_html=True)
-            return
+        #     st.markdown('</div>', unsafe_allow_html=True)
+        #     return
         
         # Chat input
         if prompt := st.chat_input("Type your message here..."):
@@ -398,7 +398,7 @@ class ChatInterface:
     def reset_conversation(self):
         """Reset the chat session while preserving the configured API credentials."""
         st.session_state.messages = []
-        st.session_state.awaiting_input = None
+        # st.session_state.awaiting_input = None
         st.session_state.user_data = {}
         st.session_state.conversation_id = str(self.uuid_handler.generate_uuid())
         st.session_state.session_id = str(self.uuid_handler.generate_uuid())

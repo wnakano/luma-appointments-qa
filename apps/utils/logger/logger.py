@@ -61,7 +61,7 @@ class Logger:
 		"""
 		return self._logger
 	
-	def debug(self, message: str):
+	def debug(self, message: str, exc_info: bool = False):
 		"""
 		Log a message with severity 'DEBUG'.
 
@@ -70,9 +70,9 @@ class Logger:
 		message : str
 			The message to be logged.
 		"""
-		self._logger.debug(message)
+		self._logger.debug(message, exc_info=exc_info)
 
-	def info(self, message: str):
+	def info(self, message: str, exc_info: bool = False):
 		"""
 		Log a message with severity 'INFO'.
 
@@ -81,9 +81,9 @@ class Logger:
 		message : str
 			The message to be logged.
 		"""
-		self._logger.info(message)
+		self._logger.info(message, exc_info=exc_info)
 
-	def warning(self, message: str):
+	def warning(self, message: str, exc_info: bool = False):
 		"""
 		Log a message with severity 'WARNING'.
 
@@ -92,9 +92,9 @@ class Logger:
 		message : str
 			The message to be logged.
 		"""
-		self._logger.warning(message)
+		self._logger.warning(message, exc_info=exc_info)
 
-	def error(self, message: str):
+	def error(self, message: str, exc_info: bool = False):
 		"""
 		Log a message with severity 'ERROR'.
 
@@ -103,9 +103,9 @@ class Logger:
 		message : str
 			The message to be logged.
 		"""
-		self._logger.error(message)
+		self._logger.error(message, exc_info=exc_info)
 
-	def critical(self, message: str):
+	def critical(self, message: str, exc_info: bool = False):
 		"""
 		Log a message with severity 'CRITICAL'.
 
@@ -114,5 +114,5 @@ class Logger:
 		message : str
 			The message to be logged.
 		"""
-		self._logger.critical(message)
+		self._logger.critical(message, exc_info=exc_info)
 

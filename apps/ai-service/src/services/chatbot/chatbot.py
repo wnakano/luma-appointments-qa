@@ -11,7 +11,7 @@ from typing import (
 from copy import deepcopy
 from pathlib import Path
 from pydantic import ValidationError
-from ai.graph.qa import QAGraph
+from ai.graph.conversational_qa import QAGraph
 from routers.models import (
     QAPayload, 
     QAResponse
@@ -52,11 +52,17 @@ class ChatbotService:
         end = TimeHandler.get_time()
 
         messages = state.get('messages', [])
-        logger.info(f"[Answers] message = {messages[-1]} ")
+        if messages:
+            last_message = messages[-1]
+            system_answer = last_message['system_message']
+        else:
+            system_answer = "Error in the QA"
+
+        logger.info(f"[Answers] message = {messages}")
         return QAResponse(
             request_id=params.request_id,
             user_id=params.user_id,
-            system_answer=messages[-1] if messages else "",
+            system_answer=system_answer,
             timestamp=TimeHandler.get_timestamp(tz="UTC"),
             elapsed_time=round(end - start, 4),
         )
