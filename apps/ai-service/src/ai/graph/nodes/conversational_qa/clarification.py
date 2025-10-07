@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Dict, Optional
 
 from ...states.conversational_qa import QAState, StateKeys
 from ...types.conversational_qa import (
@@ -14,7 +14,9 @@ logger = Logger(__name__)
 
 
 class ClarificationNode:
-	def __init__(self, clarification_service: ClarificationService) -> None:
+	"""Node for generating clarification prompts."""
+	
+	def __init__(self, clarification_service: ClarificationService):
 		self.clarification_service = clarification_service
 	
 	def __call__(self, state: QAState) -> QAState:
@@ -26,10 +28,41 @@ class ClarificationNode:
 			user_message = state.get(StateKeys.USER_MESSAGE, "")
 			messages = state.get(StateKeys.MESSAGES, [])
 
-			system_prompt = self._generate_clarification_prompt(state, current_node, route)
-			
-			self._update_request_counters(state, current_node)
+			conversation_context = self._build_conversation_context(messages)
+			if current_node == Nodes.VERIFICATION_PATIENT:
+				verification_info = state.get(StateKeys.USER_INFO)
+				diagnostic_info = state.get(StateKeys.VERIFICATION_DIAGNOSTICS)
+				
+				system_prompt = self.clarification_service.user_run(
+					verification_info=verification_info,
+					diagnostic_info=diagnostic_info,
+					conversation_context=conversation_context
+				)
 
+				state[StateKeys.VERIFICATION_DIAGNOSTICS] = None
+				
+			elif current_node == Nodes.VERIFICATION_APPOINTMENT:
+				appointment_info = state.get(StateKeys.APPOINTMENT_INFO)
+				diagnostic_info = state.get(StateKeys.APPOINTMENT_DIAGNOSTICS)
+				
+				system_prompt = self.clarification_service.appointment_run(
+					appointment_info=appointment_info,
+					diagnostic_info=diagnostic_info,
+					conversation_context=conversation_context
+				)
+
+				state[StateKeys.APPOINTMENT_DIAGNOSTICS] = None
+			
+			elif route == Routes.INTENT_WAIT and current_node == Nodes.ACTION_ROUTER:
+				appointment_info = state.get(StateKeys.APPOINTMENT_INFO)
+				system_prompt = self.clarification_service.appointment_wait(
+					appointment_info=appointment_info
+				)
+			
+			else:
+				logger.warning(f"Unhandled clarification scenario: {current_node}, {route}")
+				system_prompt = "Could you please provide more information?"
+			
 			state[StateKeys.CURRENT_NODE] = Nodes.CLARIFICATION
 			state[StateKeys.MESSAGES] = messages + [
 				{
@@ -38,7 +71,7 @@ class ClarificationNode:
 				}
 			]
 			
-			logger.info(f" ... Generated clarification for node: {current_node}")
+			logger.info(" ... Clarification prompt generated")
 			
 			return state
 			
@@ -46,78 +79,31 @@ class ClarificationNode:
 			logger.error(f"Error in ClarificationNode: {e}", exc_info=True)
 			raise
 	
-	def _generate_clarification_prompt(
-		self,
-		state: QAState,
-		current_node: Optional[Nodes],
-		route: Optional[Routes]
-	) -> str:
-		if current_node == Nodes.VERIFICATION_PATIENT:
-			return self._get_user_verification_clarification(state)
+	def _build_conversation_context(self, messages: List[Dict]) -> str:
+		"""
+		Build conversation context string from message history.
 		
-		elif current_node == Nodes.VERIFICATION_APPOINTMENT:
-			return self._get_appointment_verification_clarification(state)
+		Args:
+			messages: List of message dictionaries
+			
+		Returns:
+			Formatted conversation context
+		"""
+		if not messages:
+			return "No previous conversation."
 		
-		elif route == Routes.INTENT_WAIT and current_node == Nodes.ACTION_ROUTER:
-			return self._get_appointment_wait_clarification(state)
+		recent_messages = messages[-3:] if len(messages) > 3 else messages
 		
-		else:
-			error_msg = (
-				f"Unable to generate clarification for node: {current_node}, route: {route}"
-			)
-			logger.error(error_msg)
-			raise ValueError(error_msg)
-	
-	def _get_user_verification_clarification(self, state: QAState) -> str:
-		verification_info: Optional[VerificationInfoModel] = state.get(
-			StateKeys.USER_INFO
-		)
+		context_parts = []
+		for msg in recent_messages:
+			if not isinstance(msg, dict):
+				continue
+			user_msg = msg.get(MessageKeys.USER_MESSAGE, "")
+			system_msg = msg.get(MessageKeys.SYSTEM_MESSAGE, "")
+			
+			if user_msg:
+				context_parts.append(f"User: {user_msg}")
+			if system_msg:
+				context_parts.append(f"Assistant: {system_msg}")
 		
-		logger.info(" ... Generating user verification clarification")
-		
-		system_prompt = self.clarification_service.user_run(
-			verification_info=verification_info
-		)
-		
-		return system_prompt
-	
-	def _get_appointment_verification_clarification(self, state: QAState) -> str:
-		appointment_info: Optional[AppointmentInfoModel] = state.get(
-			StateKeys.APPOINTMENT_INFO
-		)
-		
-		logger.info(" ... Generating appointment verification clarification")
-		
-		system_prompt = self.clarification_service.appointment_run(
-			appointment_info=appointment_info
-		)
-		
-		return system_prompt
-	
-	def _get_appointment_wait_clarification(self, state: QAState) -> str:
-		appointment_info: Optional[AppointmentInfoModel] = state.get(
-			StateKeys.APPOINTMENT_INFO
-		)
-		
-		logger.info(" ... Generating appointment wait clarification")
-		
-		system_prompt = self.clarification_service.appointment_wait(
-			appointment_info=appointment_info
-		)
-		
-		return system_prompt
-	
-	def _update_request_counters(
-		self,
-		state: QAState,
-		current_node: Optional[Nodes]
-	) -> None:
-		if current_node == Nodes.VERIFICATION_PATIENT:
-			current_count = state.get(StateKeys.USER_REQUEST_COUNTER, 0)
-			state[StateKeys.USER_REQUEST_COUNTER] = current_count + 1
-			logger.info(f" ... Updated user_request_counter to {current_count + 1}")
-		
-		elif current_node == Nodes.VERIFICATION_APPOINTMENT:
-			current_count = state.get(StateKeys.APPOINTMENT_REQUEST_COUNTER, 0)
-			state[StateKeys.APPOINTMENT_REQUEST_COUNTER] = current_count + 1
-			logger.info(f" ... Updated appointment_request_counter to {current_count + 1}")
+		return "\n".join(context_parts)
