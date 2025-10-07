@@ -50,10 +50,13 @@ class QAState(TypedDict):
     user_info: Union[VerificationInfoModel, None]
     user_record: Union[VerificationRecordModel, None]
     user_request_counter: int = 0
+    verification_diagnostics: Optional[Dict[str, Any]] = None
+    
 
     appointment_info: Union[AppointmentInfoModel, None] = None
     appointment_record: Union[AppointmentRecordModel, None] = None
     appointment_request_counter: int = 0
+    appointment_diagnostics: Optional[Dict[str, Any]] = None
     
     confirmation_intent: Union[AppointmentConfirmationResponse, None] = None
     
@@ -80,6 +83,7 @@ class StateKeys:
     USER_VERIFIED: Final[str] = "user_verified"
     VERIFICATION_STEP: Final[str] = "verification_step"
     COLLECTED_INFO: Final[str] = "collected_info"
+    VERIFICATION_DIAGNOSTICS: Final[str] = "verification_diagnostics"
     
     FULL_NAME: Final[str] = "full_name"
     PHONE_NUMBER: Final[str] = "phone_number"
@@ -94,3 +98,4 @@ class StateKeys:
     APPOINTMENT_RECORD: Final[str] = "appointment_record"
     APPOINTMENT_REQUEST_COUNTER: Final[str] = "appointment_request_counter"
     CONFIRMATION_INTENT: Final[str] = "confirmation_intent"
+    APPOINTMENT_DIAGNOSTICS: Final[str] = "appointment_diagnostics"
